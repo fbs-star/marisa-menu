@@ -111,3 +111,10 @@ tr.row-draft { opacity: 0.55; }
 .import-result ul { font-size: 13px; max-height: 200px; overflow-y: auto; }
 
 .empty-hint { padding: 40px; text-align: center; color: var(--ink-soft); }
+
+.promo-thumb {
+  width: 96px; height: 54px; border-radius: 8px; background: #eef1ef center/cover no-repeat;
+  display: flex; align-items: center; justify-content: center; color: var(--ink-soft); font-size: 18px; overflow: hidden;
+}
+.promo-preview { width: 160px; height: 90px; border-radius: 10px; }
+.home-bg-preview { width: 220px; height: 124px; border-radius: 10px; }
