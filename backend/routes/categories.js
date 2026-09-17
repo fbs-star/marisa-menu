@@ -10,6 +10,10 @@ const TRANSLATABLE_FIELDS = [
   ['desc', 'description'],
 ];
 
+function normalizeGroup(v) {
+  return v === 'drink' ? 'drink' : 'food';
+}
+
 router.get('/', requireAuth, (req, res) => {
   const rows = db.prepare('SELECT * FROM categories ORDER BY sort_order ASC, id ASC').all();
   res.json(rows.map(nestCategory));
@@ -28,14 +32,15 @@ router.post('/', requireAuth, (req, res) => {
 
   const stmt = db.prepare(`
     INSERT INTO categories (external_id, name_en, name_th, name_ru, name_zh, name_ar,
-      desc_en, desc_th, desc_ru, desc_zh, desc_ar, image, is_new, is_signature, published, sort_order)
+      desc_en, desc_th, desc_ru, desc_zh, desc_ar, image, menu_group, is_new, is_signature, published, sort_order)
     VALUES (@external_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
-      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @image, @is_new, @is_signature, @published, @sort_order)
+      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @image, @menu_group, @is_new, @is_signature, @published, @sort_order)
   `);
   const info = stmt.run({
     external_id: body.external_id || null,
     ...flat,
     image: normalizeImage(body.image),
+    menu_group: normalizeGroup(body.menu_group),
     is_new: boolInt(body.is_new),
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? 1 : boolInt(body.published),
@@ -55,13 +60,14 @@ router.put('/:id', requireAuth, (req, res) => {
     UPDATE categories SET
       name_en=@name_en, name_th=@name_th, name_ru=@name_ru, name_zh=@name_zh, name_ar=@name_ar,
       desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru, desc_zh=@desc_zh, desc_ar=@desc_ar,
-      image=@image, is_new=@is_new, is_signature=@is_signature, published=@published,
+      image=@image, menu_group=@menu_group, is_new=@is_new, is_signature=@is_signature, published=@published,
       sort_order=@sort_order, updated_at=CURRENT_TIMESTAMP
     WHERE id=@id
   `).run({
     id: req.params.id,
     ...flat,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
+    menu_group: body.menu_group !== undefined ? normalizeGroup(body.menu_group) : existing.menu_group,
     is_new: boolInt(body.is_new),
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? existing.published : boolInt(body.published),
