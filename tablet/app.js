@@ -3,11 +3,11 @@
   const RTL_LANGS = new Set(['ar']);
 
   const UI_STRINGS = {
-    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.' },
-    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้' },
-    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.' },
-    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。' },
-    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.' },
+    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.' },
+    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้' },
+    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.' },
+    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。' },
+    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.' },
   };
 
   const BADGE_LABELS = {
@@ -25,6 +25,8 @@
   let state = {
     lang: localStorage.getItem('menu_lang') || 'en',
     menu: null,
+    view: 'home', // 'home' | 'menu' | 'promotions'
+    menuGroup: 'food', // 'food' | 'drink', only used when view === 'menu'
     activeCategoryId: null,
   };
 
@@ -55,21 +57,78 @@
       return;
     }
 
-    const categories = state.menu.categories || [];
-    if (!state.activeCategoryId && categories.length) state.activeCategoryId = categories[0].id;
-    const activeCategory = categories.find((c) => c.id === state.activeCategoryId) || categories[0];
+    if (state.view === 'home') return renderHome();
+    if (state.view === 'promotions') return renderPromotions();
+    return renderMenu();
+  }
+
+  function renderLangSwitcher(active) {
+    return `
+      <div class="lang-switcher" id="lang-switcher">
+        ${(state.menu.languages || Object.keys(LANG_LABELS)).map((l) => `
+          <button class="lang-btn ${l === state.lang ? 'active' : ''}" data-lang="${l}">${LANG_LABELS[l] || l.toUpperCase()}</button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  function bindLangSwitcher(root) {
+    root.querySelector('#lang-switcher')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.lang-btn');
+      if (!btn) return;
+      state.lang = btn.dataset.lang;
+      localStorage.setItem('menu_lang', state.lang);
+      render();
+    });
+  }
+
+  // ---------------- Home screen ----------------
+  function renderHome() {
+    const app = document.getElementById('app');
+    const bg = state.menu.home_background_image;
+    const promoCount = (state.menu.promotions || []).length;
+    app.innerHTML = `
+      <div class="home-screen" ${bg ? `style="background-image:url('${bg}')"` : ''}>
+        <div class="home-top">${renderLangSwitcher()}</div>
+        <div class="home-overlay">
+          <div class="home-brand">
+            <div class="home-hotel">${escapeHtml(state.menu.hotel_name || '')}</div>
+            <div class="home-name">${escapeHtml(state.menu.restaurant_name || 'Menu')}</div>
+          </div>
+          <div class="home-buttons">
+            <button class="home-btn" data-go="food">${escapeHtml(t('foodMenu'))}</button>
+            <button class="home-btn" data-go="drink">${escapeHtml(t('drinksMenu'))}</button>
+            ${promoCount ? `<button class="home-btn home-btn-accent" data-go="promotions">${escapeHtml(t('promotionMenu'))}</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+    bindLangSwitcher(app);
+    app.querySelectorAll('[data-go]').forEach((btn) => btn.addEventListener('click', () => {
+      const go = btn.dataset.go;
+      if (go === 'promotions') { state.view = 'promotions'; }
+      else { state.view = 'menu'; state.menuGroup = go; state.activeCategoryId = null; }
+      render();
+    }));
+  }
+
+  // ---------------- Menu (food / drinks) ----------------
+  function renderMenu() {
+    const app = document.getElementById('app');
+    const categories = (state.menu.categories || []).filter((c) => (c.menu_group || 'food') === state.menuGroup);
+    if (!state.activeCategoryId || !categories.some((c) => c.id === state.activeCategoryId)) {
+      state.activeCategoryId = categories.length ? categories[0].id : null;
+    }
+    const activeCategory = categories.find((c) => c.id === state.activeCategoryId);
 
     app.innerHTML = `
       <div class="header">
+        <button class="back-btn" id="back-home" aria-label="${escapeHtml(t('back'))}">←</button>
         <div class="brand">
           <div class="brand-hotel">${escapeHtml(state.menu.hotel_name || '')}</div>
           <div class="brand-name">${escapeHtml(state.menu.restaurant_name || 'Menu')}</div>
         </div>
-        <div class="lang-switcher" id="lang-switcher">
-          ${(state.menu.languages || Object.keys(LANG_LABELS)).map((l) => `
-            <button class="lang-btn ${l === state.lang ? 'active' : ''}" data-lang="${l}">${LANG_LABELS[l] || l.toUpperCase()}</button>
-          `).join('')}
-        </div>
+        ${renderLangSwitcher()}
       </div>
       <div class="main">
         <nav class="category-rail" id="category-rail">
@@ -86,13 +145,8 @@
       </div>
     `;
 
-    document.getElementById('lang-switcher').addEventListener('click', (e) => {
-      const btn = e.target.closest('.lang-btn');
-      if (!btn) return;
-      state.lang = btn.dataset.lang;
-      localStorage.setItem('menu_lang', state.lang);
-      render();
-    });
+    bindLangSwitcher(app);
+    document.getElementById('back-home').addEventListener('click', () => { state.view = 'home'; render(); });
 
     document.getElementById('category-rail').addEventListener('click', (e) => {
       const btn = e.target.closest('.category-btn');
@@ -103,9 +157,9 @@
 
     document.getElementById('content').addEventListener('click', (e) => {
       const card = e.target.closest('.item-card');
-      if (!card) return;
+      if (!card || !activeCategory) return;
       const item = activeCategory.items.find((i) => i.id === Number(card.dataset.item));
-      if (item) openModal(item);
+      if (item) openItemModal(item);
     });
   }
 
@@ -158,7 +212,7 @@
     }).join('')}</div>`;
   }
 
-  function openModal(item) {
+  function openItemModal(item) {
     const icon = FOOD_ICONS[(item.food_color_code || 0) % FOOD_ICONS.length];
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
@@ -189,6 +243,69 @@
     document.body.appendChild(backdrop);
   }
 
+  // ---------------- Promotions ----------------
+  function renderPromotions() {
+    const app = document.getElementById('app');
+    const promotions = state.menu.promotions || [];
+    app.innerHTML = `
+      <div class="header">
+        <button class="back-btn" id="back-home" aria-label="${escapeHtml(t('back'))}">←</button>
+        <div class="brand">
+          <div class="brand-hotel">${escapeHtml(state.menu.hotel_name || '')}</div>
+          <div class="brand-name">${escapeHtml(state.menu.restaurant_name || 'Menu')}</div>
+        </div>
+        ${renderLangSwitcher()}
+      </div>
+      <div class="content promo-content">
+        ${promotions.length ? `
+          <div class="promo-feed" id="promo-feed">
+            ${promotions.map(renderPromoCard).join('')}
+          </div>
+        ` : `<div class="empty-state">${escapeHtml(t('noPromotions'))}</div>`}
+      </div>
+    `;
+    bindLangSwitcher(app);
+    document.getElementById('back-home').addEventListener('click', () => { state.view = 'home'; render(); });
+    document.getElementById('promo-feed')?.addEventListener('click', (e) => {
+      const card = e.target.closest('.promo-card');
+      if (!card) return;
+      const promo = promotions.find((p) => p.id === Number(card.dataset.promo));
+      if (promo) openPromoModal(promo);
+    });
+  }
+
+  function renderPromoCard(promo) {
+    return `
+      <div class="promo-card" data-promo="${promo.id}">
+        <div class="promo-card-image" style="${promo.image ? `background-image:url('${promo.image}')` : ''}">
+          <div class="promo-card-scrim">
+            <div class="promo-card-title">${escapeHtml(fmt(promo.title))}</div>
+            ${fmt(promo.subtitle) ? `<div class="promo-card-subtitle">${escapeHtml(fmt(promo.subtitle))}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function openPromoModal(promo) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop promo-modal-backdrop';
+    backdrop.innerHTML = `
+      <div class="modal promo-modal">
+        <button class="modal-close" aria-label="Close">&times;</button>
+        <div class="promo-modal-image" style="${promo.image ? `background-image:url('${promo.image}')` : ''}"></div>
+        <div class="modal-body">
+          <div class="item-name">${escapeHtml(fmt(promo.title))}</div>
+          ${fmt(promo.subtitle) ? `<div class="item-desc">${escapeHtml(fmt(promo.subtitle))}</div>` : ''}
+        </div>
+      </div>
+    `;
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop || e.target.closest('.modal-close')) backdrop.remove();
+    });
+    document.body.appendChild(backdrop);
+  }
+
   function formatNumber(n) {
     return Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
   }
@@ -208,4 +325,3 @@
 
   init();
 })();
-
