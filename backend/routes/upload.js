@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
 const ALLOWED = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 const upload = multer({
   storage,
-  limits: { fileSize: 8 * 1024 * 1024 },
+  limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     if (!ALLOWED.includes(ext)) return cb(new Error('Only image files are allowed (jpg, png, webp, gif)'));
@@ -30,10 +30,19 @@ const upload = multer({
 
 const router = express.Router();
 
-router.post('/', requireAuth, upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
-  res.json({ filename: req.file.filename, url: `/uploads/${req.file.filename}` });
+router.post('/', requireAuth, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'Image is too large. Please use a photo under 20MB.' });
+      }
+      return res.status(400).json({ error: err.message });
+    } else if (err) {
+      return res.status(400).json({ error: err.message || 'Upload failed' });
+    }
+    if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
+    res.json({ filename: req.file.filename, url: `/uploads/${req.file.filename}` });
+  });
 });
 
 module.exports = router;
-
