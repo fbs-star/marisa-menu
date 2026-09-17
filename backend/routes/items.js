@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestItem, flattenTranslatable, boolInt } = require('../helpers');
+const { nestItem, flattenTranslatable, boolInt, normalizeImage } = require('../helpers');
 
 const router = express.Router();
 
@@ -64,7 +64,7 @@ router.post('/', requireAuth, (req, res) => {
     price: body.price ?? null,
     price_calorie: body.price_calorie || null,
     ...priceNotes,
-    image: body.image || null,
+    image: normalizeImage(body.image),
     food_color_code: body.food_color_code ?? null,
     ...buildBadgeValues(body),
     preparation_time: body.preparation_time ?? null,
@@ -102,7 +102,7 @@ router.put('/:id', requireAuth, (req, res) => {
     price: body.price ?? existing.price,
     price_calorie: body.price_calorie ?? existing.price_calorie,
     ...priceNotes,
-    image: body.image !== undefined ? body.image : existing.image,
+    image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
     food_color_code: body.food_color_code ?? existing.food_color_code,
     ...buildBadgeValues(body),
     preparation_time: body.preparation_time ?? existing.preparation_time,
@@ -149,4 +149,3 @@ router.delete('/:id', requireAuth, (req, res) => {
 });
 
 module.exports = router;
-
