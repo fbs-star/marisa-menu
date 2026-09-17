@@ -106,9 +106,30 @@ CREATE TABLE IF NOT EXISTS promotions (
 CREATE INDEX IF NOT EXISTS idx_items_category ON items(category_id);
 `;
 
+// libSQL's named-parameter binding is strict: it requires the args object to
+// have exactly the same set of keys as the @name placeholders used in the
+// SQL, and throws "Number of arguments mismatch" on any extra key. The old
+// better-sqlite3 driver silently ignored unused keys in a named-params
+// object, and some call sites (e.g. flattenTranslatable spreading all 5
+// LANGS even when a column set only uses 4) rely on that leniency. Rather
+// than audit every call site, filter any plain-object args down to just the
+// keys the SQL actually references, restoring the old forgiving behavior.
+function filterNamedArgs(sql, args) {
+  if (!args || Array.isArray(args)) return args;
+  const used = new Set();
+  const re = /[@:$]([A-Za-z_][A-Za-z0-9_]*)/g;
+  let m;
+  while ((m = re.exec(sql))) used.add(m[1]);
+  const out = {};
+  for (const k of used) {
+    if (Object.prototype.hasOwnProperty.call(args, k)) out[k] = args[k];
+  }
+  return out;
+}
+
 // Run a single statement, returning the raw ResultSet.
 async function exec(sql, args = []) {
-  return client.execute({ sql, args });
+  return client.execute({ sql, args: filterNamedArgs(sql, args) });
 }
 
 // Convenience helpers mirroring the better-sqlite3 API we used to have, so
@@ -141,7 +162,7 @@ async function run(sql, args = []) {
 // instead.
 async function batchRun(statements) {
   if (!statements.length) return;
-  await client.batch(statements.map((s) => ({ sql: s.sql, args: s.args || [] })), 'write');
+  await client.batch(statements.map((s) => ({ sql: s.sql, args: filterNamedArgs(s.sql, s.args || []) })), 'write');
 }
 
 // Runs `fn(tx)` inside an interactive transaction, where `tx` exposes the
@@ -150,10 +171,10 @@ async function batchRun(statements) {
 async function runInTransaction(fn) {
   const tx = await client.transaction('write');
   const txHelpers = {
-    get: async (sql, args = []) => (await tx.execute({ sql, args })).rows[0],
-    all: async (sql, args = []) => (await tx.execute({ sql, args })).rows,
+    get: async (sql, args = []) => (await tx.execute({ sql, args: filterNamedArgs(sql, args) })).rows[0],
+    all: async (sql, args = []) => (await tx.execute({ sql, args: filterNamedArgs(sql, args) })).rows,
     run: async (sql, args = []) => {
-      const res = await tx.execute({ sql, args });
+      const res = await tx.execute({ sql, args: filterNamedArgs(sql, args) });
       return {
         lastInsertRowid: res.lastInsertRowid === undefined || res.lastInsertRowid === null
           ? undefined
