@@ -1,33 +1,58 @@
+/*
+ * Thavorn Beach Village brand palette
+ * ------------------------------------
+ * Gold  — PANTONE 7502 U · CMYK 25/28/62/0  · RGB 196,174,119 · #C4AE77
+ * Grey  — PANTONE 419 U  · CMYK 58/50/55/62 · RGB 59,60,56    · #3B3C38
+ * White — #FFFFFF
+ *
+ * Headline typeface: "DB Penthai" (the brand's licensed display face, for
+ * both the English and Thai headline cuts). It is a commercial font from
+ * DB Type Foundry, so it isn't bundled here — if the hotel provides the
+ * licensed webfont files, drop them in tablet/fonts/ and uncomment the
+ * @font-face block below, and headings will pick it up automatically via
+ * the --font-display variable. Until then, headings fall back to a serif
+ * pairing that is free to use everywhere (Google Fonts, loaded below).
+ */
+/*
+@font-face {
+  font-family: 'DB Penthai';
+  src: url('fonts/DBPenthai.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
+*/
+
 :root {
-  --color-bg: #faf7f0;
+  --color-bg: #faf8f4;
   --color-surface: #ffffff;
-  --color-ink: #23302b;
-  --color-ink-soft: #5b6b62;
-  --color-primary: #0f5c4c;
-  --color-primary-dark: #0a4238;
-  --color-gold: #c9973f;
-  --color-gold-soft: #f3e6c9;
-  --color-border: #e7e0d0;
+  --color-ink: #2b2b28;
+  --color-ink-soft: #6a6a63;
+  --color-primary: #3b3c38;
+  --color-primary-dark: #262723;
+  --color-gold: #c4ae77;
+  --color-gold-soft: #ede7d6;
+  --color-grey-soft: #c4c5c3;
+  --color-border: #e4ded0;
   --color-danger: #b3432c;
   --radius-lg: 20px;
   --radius-md: 14px;
   --radius-sm: 10px;
-  --shadow-card: 0 6px 18px rgba(15, 92, 76, 0.08);
+  --shadow-card: 0 6px 18px rgba(59, 60, 56, 0.1);
   --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.35);
   --font-latin: 'Noto Sans', system-ui, sans-serif;
   --font-th: 'Noto Sans Thai', 'Noto Sans', sans-serif;
   --font-zh: 'Noto Sans SC', 'Noto Sans', sans-serif;
   --font-ar: 'Noto Sans Arabic', 'Noto Sans', sans-serif;
-  --font-display: 'Playfair Display', serif;
+  --font-display: 'DB Penthai', 'Cormorant Garamond', 'Noto Serif Thai', serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #12211c;
-    --color-surface: #17362d;
+    --color-bg: #1c1c1a;
+    --color-surface: #262723;
     --color-ink: #f1efe4;
-    --color-ink-soft: #b9c7bf;
-    --color-border: #274a3f;
+    --color-ink-soft: #c2beae;
+    --color-border: #3d3e39;
     --color-gold-soft: #3a3220;
   }
 }
@@ -252,4 +277,3 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
   .brand-name { font-size: 22px; }
   .content { padding: 18px 16px 50px; }
 }
-
