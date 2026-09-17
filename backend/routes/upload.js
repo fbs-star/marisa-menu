@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const sharp = require('sharp');
 const cloudinary = require('cloudinary').v2;
 const { requireAuth } = require('../middleware/auth');
 
@@ -32,6 +33,30 @@ const upload = multer({
 
 const router = express.Router();
 
+// Phone/camera photos routinely come in at 8-15MB, well over Cloudinary's
+// 10MB per-file limit on this (free) account, and far larger than a tablet
+// menu display needs anyway. Resize to a sane max dimension and re-compress
+// before upload. Animated GIFs are passed through untouched (resizing would
+// collapse them to a single frame); if processing fails for any other
+// reason, fall back to the original buffer rather than blocking the upload.
+async function processImage(buffer, mimetype) {
+  if (mimetype === 'image/gif') return buffer;
+  try {
+    const resized = sharp(buffer).rotate().resize({
+      width: 1920,
+      height: 1920,
+      fit: 'inside',
+      withoutEnlargement: true,
+    });
+    if (mimetype === 'image/png') return await resized.png({ quality: 82, compressionLevel: 9 }).toBuffer();
+    if (mimetype === 'image/webp') return await resized.webp({ quality: 82 }).toBuffer();
+    return await resized.jpeg({ quality: 82 }).toBuffer();
+  } catch (e) {
+    console.error('Image processing failed, uploading original file instead:', e.message);
+    return buffer;
+  }
+}
+
 function uploadBufferToCloudinary(buffer) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -55,11 +80,16 @@ router.post('/', requireAuth, (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
 
     try {
-      const result = await uploadBufferToCloudinary(req.file.buffer);
+      const processed = await processImage(req.file.buffer, req.file.mimetype);
+      const result = await uploadBufferToCloudinary(processed);
       res.json({ filename: result.public_id, url: result.secure_url });
     } catch (uploadErr) {
       console.error('Cloudinary upload failed:', uploadErr);
-      res.status(500).json({ error: 'Image upload failed. Please try again.' });
+      const tooLarge = uploadErr && /file size too large/i.test(uploadErr.message || '');
+      const message = tooLarge
+        ? 'Image is still too large after compression. Please use a smaller photo.'
+        : 'Image upload failed. Please try again.';
+      res.status(tooLarge ? 400 : 500).json({ error: message });
     }
   });
 });
