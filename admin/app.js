@@ -289,34 +289,57 @@
     document.body.appendChild(backdrop);
     setupTabs(backdrop);
 
+    let uploading = false;
+    const saveBtn = backdrop.querySelector('[data-save]');
+    const savedSaveLabel = saveBtn.textContent;
+
     backdrop.querySelector('#img-input').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const fd = new FormData();
       fd.append('image', file);
+      uploading = true;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Uploading photo…';
+      const preview = backdrop.querySelector('#img-preview');
+      const prevPreviewText = preview.textContent;
+      preview.textContent = 'Uploading…';
       try {
         const res = await api('/admin/upload', { method: 'POST', body: fd });
         backdrop.querySelector('[data-field="image"]').value = res.url;
-        const preview = backdrop.querySelector('#img-preview');
         preview.style.backgroundImage = `url('${res.url}')`;
         preview.textContent = '';
-      } catch (err) { alert('Image upload failed: ' + err.message); }
+      } catch (err) {
+        preview.textContent = prevPreviewText;
+        alert('Image upload failed: ' + err.message);
+      } finally {
+        uploading = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = savedSaveLabel;
+      }
     });
 
     backdrop.querySelector('[data-cancel]').addEventListener('click', () => backdrop.remove());
-    backdrop.querySelector('[data-save]').addEventListener('click', async () => {
+    saveBtn.addEventListener('click', async () => {
+      if (uploading) { alert('Please wait for the photo to finish uploading before saving.'); return; }
       const payload = collectTranslatable(backdrop, true);
       payload.category_id = Number(backdrop.querySelector('[data-field="category_id"]').value);
       payload.price = numOrNull(backdrop.querySelector('[data-field="price"]').value);
       payload.preparation_time = numOrNull(backdrop.querySelector('[data-field="preparation_time"]').value);
       payload.image = backdrop.querySelector('[data-field="image"]').value || null;
       BADGES.forEach(([key]) => { payload[key] = backdrop.querySelector(`[data-field="${key}"]`).checked; });
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
       try {
         if (isNew) await api('/admin/items', { method: 'POST', body: JSON.stringify(payload) });
         else await api(`/admin/items/${item.id}`, { method: 'PUT', body: JSON.stringify(payload) });
         backdrop.remove();
         await loadAll(); renderItemsPage();
-      } catch (e) { alert(e.message); }
+      } catch (e) {
+        alert(e.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = savedSaveLabel;
+      }
     });
   }
 
