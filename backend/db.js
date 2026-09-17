@@ -1,16 +1,16 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+const { createClient } = require('@libsql/client');
 const bcrypt = require('bcryptjs');
 
-const DATA_DIR = path.join(__dirname, 'data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+  console.warn('\n[db] TURSO_DATABASE_URL / TURSO_AUTH_TOKEN are not set. The app will not be able to reach the database.\n');
+}
 
-const db = new Database(path.join(DATA_DIR, 'menu.db'));
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN,
+});
 
-db.exec(`
+const SCHEMA = `
 CREATE TABLE IF NOT EXISTS categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   external_id TEXT,
@@ -104,36 +104,118 @@ CREATE TABLE IF NOT EXISTS promotions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_items_category ON items(category_id);
-`);
+`;
 
-// Migration: add categories.menu_group ('food' | 'drink') for existing
-// databases created before this column existed. Safe to run every boot.
-const categoryColumns = db.prepare("PRAGMA table_info(categories)").all().map((c) => c.name);
-if (!categoryColumns.includes('menu_group')) {
-  db.exec("ALTER TABLE categories ADD COLUMN menu_group TEXT NOT NULL DEFAULT 'food'");
+// Run a single statement, returning the raw ResultSet.
+async function exec(sql, args = []) {
+  return client.execute({ sql, args });
 }
 
-// Seed a default admin user if none exists yet.
-const adminCount = db.prepare('SELECT COUNT(*) AS c FROM admin_users').get().c;
-if (adminCount === 0) {
-  const defaultUser = process.env.ADMIN_USER || 'admin';
-  const defaultPass = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
-  const hash = bcrypt.hashSync(defaultPass, 10);
-  db.prepare('INSERT INTO admin_users (username, password_hash, display_name) VALUES (?, ?, ?)')
-    .run(defaultUser, hash, 'Administrator');
-  console.log(`\n[setup] Created default admin user "${defaultUser}". Please log in and change the password, or set ADMIN_USER / ADMIN_PASSWORD in .env before first run.\n`);
+// Convenience helpers mirroring the better-sqlite3 API we used to have, so
+// the rest of the codebase only needs `await` added rather than a full
+// rewrite of every query.
+async function get(sql, args = []) {
+  const res = await exec(sql, args);
+  return res.rows[0];
 }
 
-// Default settings
-const defaultSettings = {
-  restaurant_name: 'Marisa Restaurant',
-  hotel_name: 'Thavorn Beach Village',
-  languages: JSON.stringify(['en', 'th', 'ru', 'zh', 'ar']),
-  default_language: 'en',
-  currency: 'THB',
-  home_background_image: '',
-};
-const upsertSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
-for (const [k, v] of Object.entries(defaultSettings)) upsertSetting.run(k, v);
+async function all(sql, args = []) {
+  const res = await exec(sql, args);
+  return res.rows;
+}
 
-module.exports = db;
+async function run(sql, args = []) {
+  const res = await exec(sql, args);
+  return {
+    lastInsertRowid: res.lastInsertRowid === undefined || res.lastInsertRowid === null
+      ? undefined
+      : Number(res.lastInsertRowid),
+    changes: res.rowsAffected,
+  };
+}
+
+// Runs a list of {sql, args} statements as a single atomic write batch.
+// Use this for simple fire-and-forget writes (e.g. reorder endpoints) where
+// every statement is known up-front. For flows that need to branch based on
+// a SELECT result mid-way (e.g. the xlsx importer), use runInTransaction
+// instead.
+async function batchRun(statements) {
+  if (!statements.length) return;
+  await client.batch(statements.map((s) => ({ sql: s.sql, args: s.args || [] })), 'write');
+}
+
+// Runs `fn(tx)` inside an interactive transaction, where `tx` exposes the
+// same get/all/run helpers bound to the transaction. Commits on success,
+// rolls back on error.
+async function runInTransaction(fn) {
+  const tx = await client.transaction('write');
+  const txHelpers = {
+    get: async (sql, args = []) => (await tx.execute({ sql, args })).rows[0],
+    all: async (sql, args = []) => (await tx.execute({ sql, args })).rows,
+    run: async (sql, args = []) => {
+      const res = await tx.execute({ sql, args });
+      return {
+        lastInsertRowid: res.lastInsertRowid === undefined || res.lastInsertRowid === null
+          ? undefined
+          : Number(res.lastInsertRowid),
+        changes: res.rowsAffected,
+      };
+    },
+  };
+  try {
+    const result = await fn(txHelpers);
+    await tx.commit();
+    return result;
+  } catch (e) {
+    try { await tx.rollback(); } catch (_) { /* already closed */ }
+    throw e;
+  }
+}
+
+let initialized = null;
+
+// Ensures tables/columns/default rows exist. Safe to call multiple times;
+// subsequent calls reuse the same in-flight/completed promise.
+function initDb() {
+  if (!initialized) {
+    initialized = (async () => {
+      await client.executeMultiple(SCHEMA);
+
+      // Migration: add categories.menu_group ('food' | 'drink') for existing
+      // databases created before this column existed. Safe to run every boot.
+      const cols = await all("PRAGMA table_info(categories)");
+      const colNames = cols.map((c) => c.name);
+      if (!colNames.includes('menu_group')) {
+        await exec("ALTER TABLE categories ADD COLUMN menu_group TEXT NOT NULL DEFAULT 'food'");
+      }
+
+      // Seed a default admin user if none exists yet.
+      const adminCountRow = await get('SELECT COUNT(*) AS c FROM admin_users');
+      const adminCount = Number(adminCountRow.c);
+      if (adminCount === 0) {
+        const defaultUser = process.env.ADMIN_USER || 'admin';
+        const defaultPass = process.env.ADMIN_PASSWORD || 'ChangeMe123!';
+        const hash = bcrypt.hashSync(defaultPass, 10);
+        await run('INSERT INTO admin_users (username, password_hash, display_name) VALUES (?, ?, ?)',
+          [defaultUser, hash, 'Administrator']);
+        console.log(`\n[setup] Created default admin user "${defaultUser}". Please log in and change the password, or set ADMIN_USER / ADMIN_PASSWORD in .env before first run.\n`);
+      }
+
+      // Default settings
+      const defaultSettings = {
+        restaurant_name: 'Marisa Restaurant',
+        hotel_name: 'Thavorn Beach Village',
+        languages: JSON.stringify(['en', 'th', 'ru', 'zh', 'ar']),
+        default_language: 'en',
+        currency: 'THB',
+        home_background_image: '',
+      };
+      for (const [k, v] of Object.entries(defaultSettings)) {
+        await run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [k, v]);
+      }
+    })();
+  }
+  return initialized;
+}
+
+module.exports = { client, get, all, run, exec, batchRun, runInTransaction, initDb };

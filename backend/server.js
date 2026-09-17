@@ -13,7 +13,7 @@ const importRoutes = require('./routes/import');
 const promotionRoutes = require('./routes/promotions');
 const settingsRoutes = require('./routes/settings');
 
-require('./db'); // ensure DB + default admin user are initialized
+const { initDb } = require('./db'); // ensure DB + default admin user are initialized
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,7 +22,7 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
-// Uploaded images
+// Uploaded images (legacy local-disk uploads only; new uploads go to Cloudinary)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API routes
@@ -41,9 +41,16 @@ app.use('/', express.static(path.join(__dirname, '..', 'tablet')));
 
 app.get('/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 
-app.listen(PORT, () => {
-  console.log(`\nThavorn / Marisa menu app running:`);
-  console.log(`  Guest tablet menu:  http://localhost:${PORT}/`);
-  console.log(`  Admin panel:        http://localhost:${PORT}/admin/`);
-  console.log(`  API health check:   http://localhost:${PORT}/health\n`);
-});
+initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`\nThavorn / Marisa menu app running:`);
+      console.log(`  Guest tablet menu:  http://localhost:${PORT}/`);
+      console.log(`  Admin panel:        http://localhost:${PORT}/admin/`);
+      console.log(`  API health check:   http://localhost:${PORT}/health\n`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  });

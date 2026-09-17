@@ -40,7 +40,7 @@ function classifyMenuGroup(row, nameEn) {
   return DRINK_CATEGORY_NAMES.has(nameEn.trim().toLowerCase()) ? 'drink' : 'food';
 }
 
-function importWorkbook(buffer) {
+async function importWorkbook(buffer) {
   const wb = XLSX.read(buffer, { type: 'buffer' });
   const sectionSheet = wb.Sheets['Section'];
   const itemSheet = wb.Sheets['Item'];
@@ -52,28 +52,12 @@ function importWorkbook(buffer) {
   const itemRows = XLSX.utils.sheet_to_json(itemSheet, { defval: '' });
 
   const result = { categories: { created: 0, updated: 0 }, items: { created: 0, updated: 0, skipped: [] } };
-
   const sectionKeyToCategoryId = {};
 
-  const findCategoryByExternal = db.prepare('SELECT id FROM categories WHERE external_id = ? AND external_id != \'\'');
-  const findCategoryByName = db.prepare('SELECT id FROM categories WHERE name_en = ?');
-  const insertCategory = db.prepare(`
-    INSERT INTO categories (external_id, name_en, name_th, name_ru, name_zh, name_ar,
-      desc_en, desc_th, desc_ru, desc_zh, desc_ar, menu_group, is_new, is_signature, published, sort_order)
-    VALUES (@external_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
-      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @menu_group, @is_new, @is_signature, @published, @sort_order)
-  `);
-  const updateCategory = db.prepare(`
-    UPDATE categories SET name_en=@name_en, name_th=@name_th, name_ru=@name_ru, name_zh=@name_zh, name_ar=@name_ar,
-      desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru, desc_zh=@desc_zh, desc_ar=@desc_ar,
-      menu_group=@menu_group, is_new=@is_new, is_signature=@is_signature, published=@published, updated_at=CURRENT_TIMESTAMP
-    WHERE id=@id
-  `);
-
-  const importCategories = db.transaction((rows) => {
-    rows.forEach((row, idx) => {
+  await db.runInTransaction(async (tx) => {
+    for (const [idx, row] of sectionRows.entries()) {
       const sectionKey = strOrEmpty(row.section) || strOrEmpty(row.name_en);
-      if (!sectionKey) return;
+      if (!sectionKey) continue;
       const external_id = strOrEmpty(row.id_external);
       const name_en = strOrEmpty(row.name_en);
       const data = {
@@ -88,57 +72,40 @@ function importWorkbook(buffer) {
         sort_order: idx,
       };
 
-      let existing = external_id ? findCategoryByExternal.get(external_id) : null;
-      if (!existing) existing = findCategoryByName.get(data.name_en);
+      let existing = external_id
+        ? await tx.get("SELECT id FROM categories WHERE external_id = ? AND external_id != ''", [external_id])
+        : null;
+      if (!existing) existing = await tx.get('SELECT id FROM categories WHERE name_en = ?', [data.name_en]);
 
       if (existing) {
-        updateCategory.run({ ...data, id: existing.id });
+        await tx.run(`
+          UPDATE categories SET name_en=@name_en, name_th=@name_th, name_ru=@name_ru, name_zh=@name_zh, name_ar=@name_ar,
+            desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru, desc_zh=@desc_zh, desc_ar=@desc_ar,
+            menu_group=@menu_group, is_new=@is_new, is_signature=@is_signature, published=@published, updated_at=CURRENT_TIMESTAMP
+          WHERE id=@id
+        `, { ...data, id: existing.id });
         sectionKeyToCategoryId[sectionKey] = existing.id;
         result.categories.updated++;
       } else {
-        const info = insertCategory.run(data);
+        const info = await tx.run(`
+          INSERT INTO categories (external_id, name_en, name_th, name_ru, name_zh, name_ar,
+            desc_en, desc_th, desc_ru, desc_zh, desc_ar, menu_group, is_new, is_signature, published, sort_order)
+          VALUES (@external_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
+            @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @menu_group, @is_new, @is_signature, @published, @sort_order)
+        `, data);
         sectionKeyToCategoryId[sectionKey] = info.lastInsertRowid;
         result.categories.created++;
       }
-    });
-  });
-  importCategories(sectionRows);
+    }
 
-  const findItemByExternal = db.prepare('SELECT id FROM items WHERE external_id = ? AND external_id != \'\'');
-  const findItemByNameAndCategory = db.prepare('SELECT id FROM items WHERE name_en = ? AND category_id = ?');
-  const insertItem = db.prepare(`
-    INSERT INTO items (external_id, category_id, name_en, name_th, name_ru, name_zh, name_ar,
-      desc_en, desc_th, desc_ru, desc_zh, desc_ar, price, price_calorie,
-      price_note_en, price_note_th, price_note_ru, price_note_zh, food_color_code,
-      is_new, is_signature, is_chefs_special, is_must_try, is_best_seller, is_our_favorite,
-      is_healthy, is_snooze, preparation_time, stock, published, sort_order)
-    VALUES (@external_id, @category_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
-      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @price, @price_calorie,
-      @price_note_en, @price_note_th, @price_note_ru, @price_note_zh, @food_color_code,
-      @is_new, @is_signature, @is_chefs_special, @is_must_try, @is_best_seller, @is_our_favorite,
-      @is_healthy, @is_snooze, @preparation_time, @stock, @published, @sort_order)
-  `);
-  const updateItem = db.prepare(`
-    UPDATE items SET category_id=@category_id, name_en=@name_en, name_th=@name_th, name_ru=@name_ru,
-      name_zh=@name_zh, name_ar=@name_ar, desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru,
-      desc_zh=@desc_zh, desc_ar=@desc_ar, price=@price, price_calorie=@price_calorie,
-      price_note_en=@price_note_en, price_note_th=@price_note_th, price_note_ru=@price_note_ru, price_note_zh=@price_note_zh,
-      food_color_code=@food_color_code, is_new=@is_new, is_signature=@is_signature, is_chefs_special=@is_chefs_special,
-      is_must_try=@is_must_try, is_best_seller=@is_best_seller, is_our_favorite=@is_our_favorite, is_healthy=@is_healthy,
-      is_snooze=@is_snooze, preparation_time=@preparation_time, stock=@stock, published=@published,
-      updated_at=CURRENT_TIMESTAMP
-    WHERE id=@id
-  `);
-
-  const importItems = db.transaction((rows) => {
-    rows.forEach((row, idx) => {
+    for (const [idx, row] of itemRows.entries()) {
       const name_en = strOrEmpty(row.name_en);
-      if (!name_en) return;
+      if (!name_en) continue;
       const sectionKey = strOrEmpty(row.section);
       const category_id = sectionKeyToCategoryId[sectionKey] || null;
       if (!category_id) {
         result.items.skipped.push({ name_en, reason: `Unknown section "${sectionKey}"` });
-        return;
+        continue;
       }
       const external_id = strOrEmpty(row.id_external);
       const data = {
@@ -162,19 +129,41 @@ function importWorkbook(buffer) {
         sort_order: idx,
       };
 
-      let existing = external_id ? findItemByExternal.get(external_id) : null;
-      if (!existing) existing = findItemByNameAndCategory.get(name_en, category_id);
+      let existing = external_id
+        ? await tx.get("SELECT id FROM items WHERE external_id = ? AND external_id != ''", [external_id])
+        : null;
+      if (!existing) existing = await tx.get('SELECT id FROM items WHERE name_en = ? AND category_id = ?', [name_en, category_id]);
 
       if (existing) {
-        updateItem.run({ ...data, id: existing.id });
+        await tx.run(`
+          UPDATE items SET category_id=@category_id, name_en=@name_en, name_th=@name_th, name_ru=@name_ru,
+            name_zh=@name_zh, name_ar=@name_ar, desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru,
+            desc_zh=@desc_zh, desc_ar=@desc_ar, price=@price, price_calorie=@price_calorie,
+            price_note_en=@price_note_en, price_note_th=@price_note_th, price_note_ru=@price_note_ru, price_note_zh=@price_note_zh,
+            food_color_code=@food_color_code, is_new=@is_new, is_signature=@is_signature, is_chefs_special=@is_chefs_special,
+            is_must_try=@is_must_try, is_best_seller=@is_best_seller, is_our_favorite=@is_our_favorite, is_healthy=@is_healthy,
+            is_snooze=@is_snooze, preparation_time=@preparation_time, stock=@stock, published=@published,
+            updated_at=CURRENT_TIMESTAMP
+          WHERE id=@id
+        `, { ...data, id: existing.id });
         result.items.updated++;
       } else {
-        insertItem.run(data);
+        await tx.run(`
+          INSERT INTO items (external_id, category_id, name_en, name_th, name_ru, name_zh, name_ar,
+            desc_en, desc_th, desc_ru, desc_zh, desc_ar, price, price_calorie,
+            price_note_en, price_note_th, price_note_ru, price_note_zh, food_color_code,
+            is_new, is_signature, is_chefs_special, is_must_try, is_best_seller, is_our_favorite,
+            is_healthy, is_snooze, preparation_time, stock, published, sort_order)
+          VALUES (@external_id, @category_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
+            @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @price, @price_calorie,
+            @price_note_en, @price_note_th, @price_note_ru, @price_note_zh, @food_color_code,
+            @is_new, @is_signature, @is_chefs_special, @is_must_try, @is_best_seller, @is_our_favorite,
+            @is_healthy, @is_snooze, @preparation_time, @stock, @published, @sort_order)
+        `, data);
         result.items.created++;
       }
-    });
+    }
   });
-  importItems(itemRows);
 
   return result;
 }

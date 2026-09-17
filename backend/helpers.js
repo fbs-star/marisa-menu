@@ -1,19 +1,22 @@
 const LANGS = ['en', 'th', 'ru', 'zh', 'ar'];
 
-// The DB always stores a bare filename (e.g. "abc123.jpg") in the `image`
-// column. These two helpers keep that true even if a caller accidentally
-// hands us a value that already has the "/uploads/" prefix on it (or a full
-// URL), so a save can never compound the prefix.
+// New uploads go to Cloudinary and the `image` column stores the full
+// https:// URL Cloudinary returns. Older rows (from before this migration)
+// may still hold a bare local filename like "abc123.jpg" from the old
+// disk-based uploader; normalizeImage/imageUrl keep both forms working.
 function normalizeImage(value) {
   if (!value) return null;
   const str = String(value).trim();
   if (!str) return null;
+  if (/^https?:\/\//i.test(str)) return str; // Cloudinary (or any) absolute URL — store as-is
   return str.replace(/^\/?uploads\//, '');
 }
 
 function imageUrl(value) {
   const name = normalizeImage(value);
-  return name ? `/uploads/${name}` : null;
+  if (!name) return null;
+  if (/^https?:\/\//i.test(name)) return name; // already a full URL
+  return `/uploads/${name}`; // legacy local file (may no longer exist on Render's free tier)
 }
 
 // Convert a DB row (flat name_en/name_th/... columns) into a nested shape
