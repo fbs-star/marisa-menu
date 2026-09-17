@@ -14,29 +14,24 @@ function normalizeGroup(v) {
   return v === 'drink' ? 'drink' : 'food';
 }
 
-router.get('/', requireAuth, (req, res) => {
-  const rows = db.prepare('SELECT * FROM categories ORDER BY sort_order ASC, id ASC').all();
+router.get('/', requireAuth, async (req, res) => {
+  const rows = await db.all('SELECT * FROM categories ORDER BY sort_order ASC, id ASC');
   res.json(rows.map(nestCategory));
 });
 
-router.get('/:id', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+router.get('/:id', requireAuth, async (req, res) => {
+  const row = await db.get('SELECT * FROM categories WHERE id = ?', [req.params.id]);
   if (!row) return res.status(404).json({ error: 'Not found' });
   res.json(nestCategory(row));
 });
 
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const body = req.body || {};
   const flat = flattenTranslatable(body, TRANSLATABLE_FIELDS);
-  const maxOrder = db.prepare('SELECT MAX(sort_order) AS m FROM categories').get().m || 0;
+  const maxOrderRow = await db.get('SELECT MAX(sort_order) AS m FROM categories');
+  const maxOrder = maxOrderRow.m || 0;
 
-  const stmt = db.prepare(`
-    INSERT INTO categories (external_id, name_en, name_th, name_ru, name_zh, name_ar,
-      desc_en, desc_th, desc_ru, desc_zh, desc_ar, image, menu_group, is_new, is_signature, published, sort_order)
-    VALUES (@external_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
-      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @image, @menu_group, @is_new, @is_signature, @published, @sort_order)
-  `);
-  const info = stmt.run({
+  const values = {
     external_id: body.external_id || null,
     ...flat,
     image: normalizeImage(body.image),
@@ -45,25 +40,24 @@ router.post('/', requireAuth, (req, res) => {
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? 1 : boolInt(body.published),
     sort_order: body.sort_order ?? maxOrder + 1,
-  });
-  const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(info.lastInsertRowid);
+  };
+  const info = await db.run(`
+    INSERT INTO categories (external_id, name_en, name_th, name_ru, name_zh, name_ar,
+      desc_en, desc_th, desc_ru, desc_zh, desc_ar, image, menu_group, is_new, is_signature, published, sort_order)
+    VALUES (@external_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
+      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @image, @menu_group, @is_new, @is_signature, @published, @sort_order)
+  `, values);
+  const row = await db.get('SELECT * FROM categories WHERE id = ?', [info.lastInsertRowid]);
   res.status(201).json(nestCategory(row));
 });
 
-router.put('/:id', requireAuth, (req, res) => {
+router.put('/:id', requireAuth, async (req, res) => {
   const body = req.body || {};
-  const existing = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+  const existing = await db.get('SELECT * FROM categories WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
   const flat = flattenTranslatable(body, TRANSLATABLE_FIELDS);
 
-  db.prepare(`
-    UPDATE categories SET
-      name_en=@name_en, name_th=@name_th, name_ru=@name_ru, name_zh=@name_zh, name_ar=@name_ar,
-      desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru, desc_zh=@desc_zh, desc_ar=@desc_ar,
-      image=@image, menu_group=@menu_group, is_new=@is_new, is_signature=@is_signature, published=@published,
-      sort_order=@sort_order, updated_at=CURRENT_TIMESTAMP
-    WHERE id=@id
-  `).run({
+  const values = {
     id: req.params.id,
     ...flat,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
@@ -72,35 +66,42 @@ router.put('/:id', requireAuth, (req, res) => {
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? existing.published : boolInt(body.published),
     sort_order: body.sort_order ?? existing.sort_order,
-  });
-  const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+  };
+  await db.run(`
+    UPDATE categories SET
+      name_en=@name_en, name_th=@name_th, name_ru=@name_ru, name_zh=@name_zh, name_ar=@name_ar,
+      desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru, desc_zh=@desc_zh, desc_ar=@desc_ar,
+      image=@image, menu_group=@menu_group, is_new=@is_new, is_signature=@is_signature, published=@published,
+      sort_order=@sort_order, updated_at=CURRENT_TIMESTAMP
+    WHERE id=@id
+  `, values);
+  const row = await db.get('SELECT * FROM categories WHERE id = ?', [req.params.id]);
   res.json(nestCategory(row));
 });
 
-router.patch('/:id/toggle-published', requireAuth, (req, res) => {
-  const row = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+router.patch('/:id/toggle-published', requireAuth, async (req, res) => {
+  const row = await db.get('SELECT * FROM categories WHERE id = ?', [req.params.id]);
   if (!row) return res.status(404).json({ error: 'Not found' });
   const next = row.published ? 0 : 1;
-  db.prepare('UPDATE categories SET published=?, updated_at=CURRENT_TIMESTAMP WHERE id=?').run(next, req.params.id);
+  await db.run('UPDATE categories SET published=?, updated_at=CURRENT_TIMESTAMP WHERE id=?', [next, req.params.id]);
   res.json({ ok: true, published: !!next });
 });
 
-router.post('/reorder', requireAuth, (req, res) => {
+router.post('/reorder', requireAuth, async (req, res) => {
   const { order } = req.body || {}; // array of category ids in desired order
   if (!Array.isArray(order)) return res.status(400).json({ error: 'order must be an array of ids' });
-  const stmt = db.prepare('UPDATE categories SET sort_order=? WHERE id=?');
-  const txn = db.transaction((ids) => {
-    ids.forEach((id, idx) => stmt.run(idx, id));
-  });
-  txn(order);
+  await db.batchRun(order.map((id, idx) => ({
+    sql: 'UPDATE categories SET sort_order=? WHERE id=?',
+    args: [idx, id],
+  })));
   res.json({ ok: true });
 });
 
-router.delete('/:id', requireAuth, (req, res) => {
-  const existing = db.prepare('SELECT * FROM categories WHERE id = ?').get(req.params.id);
+router.delete('/:id', requireAuth, async (req, res) => {
+  const existing = await db.get('SELECT * FROM categories WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
-  db.prepare('UPDATE items SET category_id = NULL WHERE category_id = ?').run(req.params.id);
-  db.prepare('DELETE FROM categories WHERE id = ?').run(req.params.id);
+  await db.run('UPDATE items SET category_id = NULL WHERE category_id = ?', [req.params.id]);
+  await db.run('DELETE FROM categories WHERE id = ?', [req.params.id]);
   res.json({ ok: true });
 });
 

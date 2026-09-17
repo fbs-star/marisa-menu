@@ -5,10 +5,10 @@ const { nestCategory, nestItem, nestPromotion, imageUrl } = require('../helpers'
 const router = express.Router();
 
 // Full published menu tree, nested by category, ready for the tablet app.
-router.get('/menu', (req, res) => {
-  const categories = db.prepare('SELECT * FROM categories WHERE published = 1 ORDER BY sort_order ASC, id ASC').all();
-  const items = db.prepare('SELECT * FROM items WHERE published = 1 ORDER BY sort_order ASC, id ASC').all();
-  const promotions = db.prepare('SELECT * FROM promotions WHERE published = 1 ORDER BY sort_order ASC, id ASC').all();
+router.get('/menu', async (req, res) => {
+  const categories = await db.all('SELECT * FROM categories WHERE published = 1 ORDER BY sort_order ASC, id ASC');
+  const items = await db.all('SELECT * FROM items WHERE published = 1 ORDER BY sort_order ASC, id ASC');
+  const promotions = await db.all('SELECT * FROM promotions WHERE published = 1 ORDER BY sort_order ASC, id ASC');
 
   const itemsByCategory = {};
   for (const it of items) {
@@ -21,19 +21,27 @@ router.get('/menu', (req, res) => {
     items: itemsByCategory[c.id] || [],
   })).filter((c) => c.items.length > 0); // hide empty categories on the guest-facing app
 
+  const [restaurantName, hotelName, currency, languagesRaw, homeBg] = await Promise.all([
+    getSetting('restaurant_name'),
+    getSetting('hotel_name'),
+    getSetting('currency'),
+    getSetting('languages'),
+    getSetting('home_background_image'),
+  ]);
+
   res.json({
-    restaurant_name: getSetting('restaurant_name'),
-    hotel_name: getSetting('hotel_name'),
-    currency: getSetting('currency'),
-    languages: JSON.parse(getSetting('languages') || '["en"]'),
-    home_background_image: imageUrl(getSetting('home_background_image')),
+    restaurant_name: restaurantName,
+    hotel_name: hotelName,
+    currency,
+    languages: JSON.parse(languagesRaw || '["en"]'),
+    home_background_image: imageUrl(homeBg),
     categories: tree,
     promotions: promotions.map(nestPromotion),
   });
 });
 
-function getSetting(key) {
-  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key);
+async function getSetting(key) {
+  const row = await db.get('SELECT value FROM settings WHERE key = ?', [key]);
   return row ? row.value : null;
 }
 

@@ -1,28 +1,30 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const crypto = require('crypto');
-const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
 const { requireAuth } = require('../middleware/auth');
 
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+if (process.env.CLOUDINARY_URL) {
+  // cloudinary.config() auto-reads CLOUDINARY_URL from the environment, but
+  // calling it explicitly makes that dependency visible here too.
+  cloudinary.config(true);
+} else {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const name = crypto.randomBytes(12).toString('hex') + ext;
-    cb(null, name);
-  },
-});
-
-const ALLOWED = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+// Images are received into memory (never written to Render's ephemeral
+// local disk) and streamed straight through to Cloudinary, which persists
+// them independently of the app's own filesystem.
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
+    const ALLOWED = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
     if (!ALLOWED.includes(ext)) return cb(new Error('Only image files are allowed (jpg, png, webp, gif)'));
     cb(null, true);
   },
@@ -30,8 +32,18 @@ const upload = multer({
 
 const router = express.Router();
 
+function uploadBufferToCloudinary(buffer) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'marisa-menu', resource_type: 'image' },
+      (err, result) => (err ? reject(err) : resolve(result)),
+    );
+    stream.end(buffer);
+  });
+}
+
 router.post('/', requireAuth, (req, res) => {
-  upload.single('image')(req, res, (err) => {
+  upload.single('image')(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'Image is too large. Please use a photo under 20MB.' });
@@ -41,7 +53,14 @@ router.post('/', requireAuth, (req, res) => {
       return res.status(400).json({ error: err.message || 'Upload failed' });
     }
     if (!req.file) return res.status(400).json({ error: 'No image uploaded' });
-    res.json({ filename: req.file.filename, url: `/uploads/${req.file.filename}` });
+
+    try {
+      const result = await uploadBufferToCloudinary(req.file.buffer);
+      res.json({ filename: result.public_id, url: result.secure_url });
+    } catch (uploadErr) {
+      console.error('Cloudinary upload failed:', uploadErr);
+      res.status(500).json({ error: 'Image upload failed. Please try again.' });
+    }
   });
 });
 
