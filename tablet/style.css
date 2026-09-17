@@ -351,6 +351,45 @@ body[data-lang="th"] .home-name, body[data-lang="zh"] .home-name, [dir="rtl"] .h
   color: #241a05;
 }
 
+/* ---------- Promo banner (inline strip on the menu page) ---------- */
+.promo-banner-strip {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  margin: 0 0 24px;
+  padding-bottom: 4px;
+}
+.promo-banner-strip::-webkit-scrollbar { height: 6px; }
+.promo-banner-strip::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 4px; }
+.promo-banner-card {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 640px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-border);
+  scroll-snap-align: start;
+}
+.promo-banner-image {
+  width: 100%;
+  aspect-ratio: 21 / 8;
+  background: var(--color-primary) center/cover no-repeat;
+  display: flex;
+  align-items: flex-end;
+}
+.promo-banner-scrim {
+  width: 100%;
+  padding: 14px 20px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0) 70%);
+  color: #fff;
+}
+.promo-banner-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; }
+body[data-lang="th"] .promo-banner-title, body[data-lang="zh"] .promo-banner-title, [dir="rtl"] .promo-banner-title { font-family: inherit; }
+.promo-banner-subtitle { font-size: 13px; color: var(--color-gold); margin-top: 2px; font-weight: 600; }
+
 /* ---------- Promotions ---------- */
 .promo-content { padding: 24px 28px 60px; }
 .promo-feed {

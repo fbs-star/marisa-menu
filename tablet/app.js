@@ -140,6 +140,7 @@
           `).join('')}
         </nav>
         <div class="content" id="content">
+          ${renderPromoBanner()}
           ${renderCategoryContent(activeCategory)}
         </div>
       </div>
@@ -156,6 +157,13 @@
     });
 
     document.getElementById('content').addEventListener('click', (e) => {
+      const promoCard = e.target.closest('.promo-banner-card');
+      if (promoCard) {
+        const promotions = state.menu.promotions || [];
+        const promo = promotions.find((p) => p.id === Number(promoCard.dataset.promo));
+        if (promo) openPromoModal(promo);
+        return;
+      }
       const card = e.target.closest('.item-card');
       if (!card || !activeCategory) return;
       const item = activeCategory.items.find((i) => i.id === Number(card.dataset.item));
@@ -241,6 +249,34 @@
       if (e.target === backdrop || e.target.closest('.modal-close')) backdrop.remove();
     });
     document.body.appendChild(backdrop);
+  }
+
+  // ---------------- Promo banner (inline on the food/drinks menu) ----------------
+  function renderPromoBanner() {
+    const promotions = state.menu.promotions || [];
+    if (!promotions.length) return '';
+    return `
+      <div class="promo-banner-strip" id="promo-banner-strip">
+        ${promotions.map(renderPromoBannerCard).join('')}
+      </div>
+    `;
+  }
+
+  function renderPromoBannerCard(promo) {
+    const title = fmt(promo.title);
+    const subtitle = fmt(promo.subtitle);
+    return `
+      <div class="promo-banner-card" data-promo="${promo.id}">
+        <div class="promo-banner-image" style="${promo.image ? `background-image:url('${promo.image}')` : ''}">
+          ${title || subtitle ? `
+            <div class="promo-banner-scrim">
+              ${title ? `<div class="promo-banner-title">${escapeHtml(title)}</div>` : ''}
+              ${subtitle ? `<div class="promo-banner-subtitle">${escapeHtml(subtitle)}</div>` : ''}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
   }
 
   // ---------------- Promotions ----------------
