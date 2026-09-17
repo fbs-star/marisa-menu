@@ -10,6 +10,8 @@ const itemRoutes = require('./routes/items');
 const publicRoutes = require('./routes/public');
 const uploadRoutes = require('./routes/upload');
 const importRoutes = require('./routes/import');
+const promotionRoutes = require('./routes/promotions');
+const settingsRoutes = require('./routes/settings');
 
 require('./db'); // ensure DB + default admin user are initialized
 
@@ -29,6 +31,8 @@ app.use('/api/admin/categories', categoryRoutes);
 app.use('/api/admin/items', itemRoutes);
 app.use('/api/admin/upload', uploadRoutes);
 app.use('/api/admin/import', importRoutes);
+app.use('/api/admin/promotions', promotionRoutes);
+app.use('/api/admin/settings', settingsRoutes);
 app.use('/api/public', publicRoutes);
 
 // Static frontends
@@ -43,4 +47,3 @@ app.listen(PORT, () => {
   console.log(`  Admin panel:        http://localhost:${PORT}/admin/`);
   console.log(`  API health check:   http://localhost:${PORT}/health\n`);
 });
-
