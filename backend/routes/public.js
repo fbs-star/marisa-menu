@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db');
-const { nestCategory, nestItem } = require('../helpers');
+const { nestCategory, nestItem, nestPromotion, imageUrl } = require('../helpers');
 
 const router = express.Router();
 
@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/menu', (req, res) => {
   const categories = db.prepare('SELECT * FROM categories WHERE published = 1 ORDER BY sort_order ASC, id ASC').all();
   const items = db.prepare('SELECT * FROM items WHERE published = 1 ORDER BY sort_order ASC, id ASC').all();
+  const promotions = db.prepare('SELECT * FROM promotions WHERE published = 1 ORDER BY sort_order ASC, id ASC').all();
 
   const itemsByCategory = {};
   for (const it of items) {
@@ -25,7 +26,9 @@ router.get('/menu', (req, res) => {
     hotel_name: getSetting('hotel_name'),
     currency: getSetting('currency'),
     languages: JSON.parse(getSetting('languages') || '["en"]'),
+    home_background_image: imageUrl(getSetting('home_background_image')),
     categories: tree,
+    promotions: promotions.map(nestPromotion),
   });
 });
 
@@ -35,4 +38,3 @@ function getSetting(key) {
 }
 
 module.exports = router;
-
