@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
 const { importWorkbook } = require('../backend/importMenu');
+const { initDb } = require('../backend/db');
 
 function readCsv(file) {
   return fs.readFileSync(path.join(__dirname, 'seed_data', file), 'utf-8');
@@ -29,12 +30,21 @@ const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 // Also save the assembled workbook so it can be inspected / reused directly.
 fs.writeFileSync(path.join(__dirname, 'seed_data', 'marisa_menu_seed.xlsx'), buffer);
 
-const result = importWorkbook(buffer);
-console.log('Seed complete:');
-console.log(`  Categories: ${result.categories.created} created, ${result.categories.updated} updated`);
-console.log(`  Items:      ${result.items.created} created, ${result.items.updated} updated`);
-if (result.items.skipped.length) {
-  console.log(`  Skipped ${result.items.skipped.length} item(s):`);
-  result.items.skipped.forEach((s) => console.log(`    - ${s.name_en}: ${s.reason}`));
-}
+(async () => {
+  try {
+    await initDb();
+    const result = await importWorkbook(buffer);
+    console.log('Seed complete:');
+    console.log(`  Categories: ${result.categories.created} created, ${result.categories.updated} updated`);
+    console.log(`  Items:      ${result.items.created} created, ${result.items.updated} updated`);
+    if (result.items.skipped.length) {
+      console.log(`  Skipped ${result.items.skipped.length} item(s):`);
+      result.items.skipped.forEach((s) => console.log(`    - ${s.name_en}: ${s.reason}`));
+    }
+    process.exit(0);
+  } catch (e) {
+    console.error('Seed failed:', e);
+    process.exit(1);
+  }
+})();
 
