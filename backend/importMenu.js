@@ -23,6 +23,23 @@ function strOrEmpty(v) {
   return v === undefined || v === null ? '' : String(v).trim();
 }
 
+// Categories that belong under the guest-facing "Drinks Menu" landing button.
+// Everything else defaults to "Food Menu". Matched case-insensitively against
+// the English category name so re-imports keep classifying the same way.
+const DRINK_CATEGORY_NAMES = new Set([
+  'beers', 'fresh cold pressed juice', 'fruit juices', 'soft drinks', 'mineral water',
+  'blended', 'fruit shakes smoothie', 'homemade mocktails', 'phuket local craft beer',
+  'aperitifs', 'vodka', 'rum', 'tequila', 'scotch whiskeys', 'bourbon & whiskeys',
+  'cognac', 'liqueurs', 'premium gin', 'cocktails', 'premium cocktails',
+  'hot coffee', 'iced coffee', 'tea',
+]);
+
+function classifyMenuGroup(row, nameEn) {
+  const explicit = strOrEmpty(row.menu_group).toLowerCase();
+  if (explicit === 'drink' || explicit === 'food') return explicit;
+  return DRINK_CATEGORY_NAMES.has(nameEn.trim().toLowerCase()) ? 'drink' : 'food';
+}
+
 function importWorkbook(buffer) {
   const wb = XLSX.read(buffer, { type: 'buffer' });
   const sectionSheet = wb.Sheets['Section'];
@@ -42,14 +59,14 @@ function importWorkbook(buffer) {
   const findCategoryByName = db.prepare('SELECT id FROM categories WHERE name_en = ?');
   const insertCategory = db.prepare(`
     INSERT INTO categories (external_id, name_en, name_th, name_ru, name_zh, name_ar,
-      desc_en, desc_th, desc_ru, desc_zh, desc_ar, is_new, is_signature, published, sort_order)
+      desc_en, desc_th, desc_ru, desc_zh, desc_ar, menu_group, is_new, is_signature, published, sort_order)
     VALUES (@external_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
-      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @is_new, @is_signature, @published, @sort_order)
+      @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @menu_group, @is_new, @is_signature, @published, @sort_order)
   `);
   const updateCategory = db.prepare(`
     UPDATE categories SET name_en=@name_en, name_th=@name_th, name_ru=@name_ru, name_zh=@name_zh, name_ar=@name_ar,
       desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru, desc_zh=@desc_zh, desc_ar=@desc_ar,
-      is_new=@is_new, is_signature=@is_signature, published=@published, updated_at=CURRENT_TIMESTAMP
+      menu_group=@menu_group, is_new=@is_new, is_signature=@is_signature, published=@published, updated_at=CURRENT_TIMESTAMP
     WHERE id=@id
   `);
 
@@ -58,12 +75,14 @@ function importWorkbook(buffer) {
       const sectionKey = strOrEmpty(row.section) || strOrEmpty(row.name_en);
       if (!sectionKey) return;
       const external_id = strOrEmpty(row.id_external);
+      const name_en = strOrEmpty(row.name_en);
       const data = {
         external_id: external_id || null,
-        name_en: strOrEmpty(row.name_en), name_th: strOrEmpty(row.name_th), name_ru: strOrEmpty(row.name_ru),
+        name_en, name_th: strOrEmpty(row.name_th), name_ru: strOrEmpty(row.name_ru),
         name_zh: strOrEmpty(row.name_zh), name_ar: strOrEmpty(row.name_ar),
         desc_en: strOrEmpty(row.desc_en), desc_th: strOrEmpty(row.desc_th), desc_ru: strOrEmpty(row.desc_ru),
         desc_zh: strOrEmpty(row.desc_zh), desc_ar: strOrEmpty(row.desc_ar),
+        menu_group: classifyMenuGroup(row, name_en),
         is_new: yesNo(row.is_new), is_signature: yesNo(row.is_signature),
         published: row.published === '' ? 1 : yesNo(row.published),
         sort_order: idx,
@@ -161,4 +180,3 @@ function importWorkbook(buffer) {
 }
 
 module.exports = { importWorkbook };
-
