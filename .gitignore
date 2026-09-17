@@ -1,0 +1,9 @@
+!backend/uploads/.gitkeep
+.env
+artifact_template.html
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/*.db-shm
+backend/data/*.db-wal
+backend/uploads/*
+node_modules/
