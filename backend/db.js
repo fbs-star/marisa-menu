@@ -84,8 +84,34 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT
 );
 
+CREATE TABLE IF NOT EXISTS promotions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title_en TEXT NOT NULL DEFAULT '',
+  title_th TEXT NOT NULL DEFAULT '',
+  title_ru TEXT NOT NULL DEFAULT '',
+  title_zh TEXT NOT NULL DEFAULT '',
+  title_ar TEXT NOT NULL DEFAULT '',
+  subtitle_en TEXT NOT NULL DEFAULT '',
+  subtitle_th TEXT NOT NULL DEFAULT '',
+  subtitle_ru TEXT NOT NULL DEFAULT '',
+  subtitle_zh TEXT NOT NULL DEFAULT '',
+  subtitle_ar TEXT NOT NULL DEFAULT '',
+  image TEXT,
+  published INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE INDEX IF NOT EXISTS idx_items_category ON items(category_id);
 `);
+
+// Migration: add categories.menu_group ('food' | 'drink') for existing
+// databases created before this column existed. Safe to run every boot.
+const categoryColumns = db.prepare("PRAGMA table_info(categories)").all().map((c) => c.name);
+if (!categoryColumns.includes('menu_group')) {
+  db.exec("ALTER TABLE categories ADD COLUMN menu_group TEXT NOT NULL DEFAULT 'food'");
+}
 
 // Seed a default admin user if none exists yet.
 const adminCount = db.prepare('SELECT COUNT(*) AS c FROM admin_users').get().c;
@@ -105,9 +131,9 @@ const defaultSettings = {
   languages: JSON.stringify(['en', 'th', 'ru', 'zh', 'ar']),
   default_language: 'en',
   currency: 'THB',
+  home_background_image: '',
 };
 const upsertSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
 for (const [k, v] of Object.entries(defaultSettings)) upsertSetting.run(k, v);
 
 module.exports = db;
-
