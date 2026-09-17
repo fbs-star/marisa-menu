@@ -26,8 +26,21 @@ function nestCategory(row) {
     name: pick(row, 'name'),
     description: pick(row, 'desc'),
     image: imageUrl(row.image),
+    menu_group: row.menu_group === 'drink' ? 'drink' : 'food',
     is_new: !!row.is_new,
     is_signature: !!row.is_signature,
+    published: !!row.published,
+    sort_order: row.sort_order,
+  };
+}
+
+function nestPromotion(row) {
+  if (!row) return row;
+  return {
+    id: row.id,
+    title: pick(row, 'title'),
+    subtitle: pick(row, 'subtitle'),
+    image: imageUrl(row.image),
     published: !!row.published,
     sort_order: row.sort_order,
   };
@@ -85,4 +98,4 @@ function boolInt(v) {
   return v ? 1 : 0;
 }
 
-module.exports = { LANGS, nestCategory, nestItem, flattenTranslatable, boolInt, normalizeImage, imageUrl };
+module.exports = { LANGS, nestCategory, nestItem, nestPromotion, flattenTranslatable, boolInt, normalizeImage, imageUrl };
