@@ -1,5 +1,21 @@
 const LANGS = ['en', 'th', 'ru', 'zh', 'ar'];
 
+// The DB always stores a bare filename (e.g. "abc123.jpg") in the `image`
+// column. These two helpers keep that true even if a caller accidentally
+// hands us a value that already has the "/uploads/" prefix on it (or a full
+// URL), so a save can never compound the prefix.
+function normalizeImage(value) {
+  if (!value) return null;
+  const str = String(value).trim();
+  if (!str) return null;
+  return str.replace(/^\/?uploads\//, '');
+}
+
+function imageUrl(value) {
+  const name = normalizeImage(value);
+  return name ? `/uploads/${name}` : null;
+}
+
 // Convert a DB row (flat name_en/name_th/... columns) into a nested shape
 // {name: {en, th, ru, zh, ar}, ...} that's easier for the frontends to consume.
 function nestCategory(row) {
@@ -9,7 +25,7 @@ function nestCategory(row) {
     external_id: row.external_id,
     name: pick(row, 'name'),
     description: pick(row, 'desc'),
-    image: row.image ? `/uploads/${row.image}` : null,
+    image: imageUrl(row.image),
     is_new: !!row.is_new,
     is_signature: !!row.is_signature,
     published: !!row.published,
@@ -28,7 +44,7 @@ function nestItem(row) {
     price: row.price,
     price_calorie: row.price_calorie,
     price_note: pick(row, 'price_note'),
-    image: row.image ? `/uploads/${row.image}` : null,
+    image: imageUrl(row.image),
     food_color_code: row.food_color_code,
     badges: {
       is_new: !!row.is_new,
@@ -69,5 +85,4 @@ function boolInt(v) {
   return v ? 1 : 0;
 }
 
-module.exports = { LANGS, nestCategory, nestItem, flattenTranslatable, boolInt };
-
+module.exports = { LANGS, nestCategory, nestItem, flattenTranslatable, boolInt, normalizeImage, imageUrl };
