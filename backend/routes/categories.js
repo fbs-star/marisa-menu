@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestCategory, flattenTranslatable, boolInt } = require('../helpers');
+const { nestCategory, flattenTranslatable, boolInt, normalizeImage } = require('../helpers');
 
 const router = express.Router();
 
@@ -35,7 +35,7 @@ router.post('/', requireAuth, (req, res) => {
   const info = stmt.run({
     external_id: body.external_id || null,
     ...flat,
-    image: body.image || null,
+    image: normalizeImage(body.image),
     is_new: boolInt(body.is_new),
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? 1 : boolInt(body.published),
@@ -61,7 +61,7 @@ router.put('/:id', requireAuth, (req, res) => {
   `).run({
     id: req.params.id,
     ...flat,
-    image: body.image !== undefined ? body.image : existing.image,
+    image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
     is_new: boolInt(body.is_new),
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? existing.published : boolInt(body.published),
@@ -99,4 +99,3 @@ router.delete('/:id', requireAuth, (req, res) => {
 });
 
 module.exports = router;
-
