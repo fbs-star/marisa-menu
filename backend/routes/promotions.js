@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestPromotion, flattenTranslatable, boolInt, normalizeImage } = require('../helpers');
+const { nestPromotion, flattenTranslatable, boolInt, normalizeImage, normalizeMenuGroup } = require('../helpers');
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ router.post('/', requireAuth, async (req, res) => {
   const values = {
     ...flat,
     image: normalizeImage(body.image),
-    menu_group: body.menu_group === 'drink' ? 'drink' : 'food',
+    menu_group: normalizeMenuGroup(body.menu_group),
     published: body.published === undefined ? 1 : boolInt(body.published),
     sort_order: body.sort_order ?? maxOrder + 1,
   };
@@ -54,7 +54,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     id: req.params.id,
     ...flat,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
-    menu_group: body.menu_group === undefined ? existing.menu_group : (body.menu_group === 'drink' ? 'drink' : 'food'),
+    menu_group: body.menu_group === undefined ? existing.menu_group : normalizeMenuGroup(body.menu_group),
     published: body.published === undefined ? existing.published : boolInt(body.published),
     sort_order: body.sort_order ?? existing.sort_order,
   };

@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestCategory, flattenTranslatable, boolInt, normalizeImage } = require('../helpers');
+const { nestCategory, flattenTranslatable, boolInt, normalizeImage, normalizeMenuGroup } = require('../helpers');
 
 const router = express.Router();
 
@@ -9,10 +9,6 @@ const TRANSLATABLE_FIELDS = [
   ['name', 'name'],
   ['desc', 'description'],
 ];
-
-function normalizeGroup(v) {
-  return v === 'drink' ? 'drink' : 'food';
-}
 
 router.get('/', requireAuth, async (req, res) => {
   const rows = await db.all('SELECT * FROM categories ORDER BY sort_order ASC, id ASC');
@@ -35,7 +31,7 @@ router.post('/', requireAuth, async (req, res) => {
     external_id: body.external_id || null,
     ...flat,
     image: normalizeImage(body.image),
-    menu_group: normalizeGroup(body.menu_group),
+    menu_group: normalizeMenuGroup(body.menu_group),
     is_new: boolInt(body.is_new),
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? 1 : boolInt(body.published),
@@ -61,7 +57,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     id: req.params.id,
     ...flat,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
-    menu_group: body.menu_group !== undefined ? normalizeGroup(body.menu_group) : existing.menu_group,
+    menu_group: body.menu_group !== undefined ? normalizeMenuGroup(body.menu_group) : existing.menu_group,
     is_new: boolInt(body.is_new),
     is_signature: boolInt(body.is_signature),
     published: body.published === undefined ? existing.published : boolInt(body.published),
