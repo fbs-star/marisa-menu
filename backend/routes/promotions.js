@@ -30,14 +30,15 @@ router.post('/', requireAuth, async (req, res) => {
   const values = {
     ...flat,
     image: normalizeImage(body.image),
+    menu_group: body.menu_group === 'drink' ? 'drink' : 'food',
     published: body.published === undefined ? 1 : boolInt(body.published),
     sort_order: body.sort_order ?? maxOrder + 1,
   };
   const info = await db.run(`
     INSERT INTO promotions (title_en, title_th, title_ru, title_zh, title_ar,
-      subtitle_en, subtitle_th, subtitle_ru, subtitle_zh, subtitle_ar, image, published, sort_order)
+      subtitle_en, subtitle_th, subtitle_ru, subtitle_zh, subtitle_ar, image, menu_group, published, sort_order)
     VALUES (@title_en, @title_th, @title_ru, @title_zh, @title_ar,
-      @subtitle_en, @subtitle_th, @subtitle_ru, @subtitle_zh, @subtitle_ar, @image, @published, @sort_order)
+      @subtitle_en, @subtitle_th, @subtitle_ru, @subtitle_zh, @subtitle_ar, @image, @menu_group, @published, @sort_order)
   `, values);
   const row = await db.get('SELECT * FROM promotions WHERE id = ?', [info.lastInsertRowid]);
   res.status(201).json(nestPromotion(row));
@@ -53,6 +54,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     id: req.params.id,
     ...flat,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
+    menu_group: body.menu_group === undefined ? existing.menu_group : (body.menu_group === 'drink' ? 'drink' : 'food'),
     published: body.published === undefined ? existing.published : boolInt(body.published),
     sort_order: body.sort_order ?? existing.sort_order,
   };
@@ -60,7 +62,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     UPDATE promotions SET
       title_en=@title_en, title_th=@title_th, title_ru=@title_ru, title_zh=@title_zh, title_ar=@title_ar,
       subtitle_en=@subtitle_en, subtitle_th=@subtitle_th, subtitle_ru=@subtitle_ru, subtitle_zh=@subtitle_zh, subtitle_ar=@subtitle_ar,
-      image=@image, published=@published, sort_order=@sort_order, updated_at=CURRENT_TIMESTAMP
+      image=@image, menu_group=@menu_group, published=@published, sort_order=@sort_order, updated_at=CURRENT_TIMESTAMP
     WHERE id=@id
   `, values);
   const row = await db.get('SELECT * FROM promotions WHERE id = ?', [req.params.id]);
