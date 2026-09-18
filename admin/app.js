@@ -524,12 +524,33 @@
   // ---------------- Home screen settings page ----------------
   function renderHomeSettingsPage() {
     const main = document.getElementById('main');
-    const bg = state.settings.home_background_image;
+    const s = state.settings;
+    const bg = s.home_background_image;
     main.innerHTML = `
       <div class="page-header">
-        <div><h1>Home Screen</h1><p>The background photo guests see on the welcome screen, before they pick Food Menu / Drinks Menu / Wine Menu / Promotion.</p></div>
+        <div><h1>Home Screen</h1><p>What guests see on the welcome screen, before they pick Food Menu / Drinks Menu / Wine Menu / Promotion.</p></div>
       </div>
       <div class="card" style="padding:24px;max-width:520px;">
+        <div class="field">
+          <label>Restaurant name</label>
+          <input id="f-restaurant_name" value="${escapeAttr(s.restaurant_name || '')}" placeholder="Marisa Restaurant" />
+        </div>
+        <div class="field">
+          <label>Wordmark on hero (large logo text)</label>
+          <input id="f-logo_text" value="${escapeAttr(s.logo_text || '')}" placeholder="Defaults to restaurant name if left blank" />
+        </div>
+        <div class="field">
+          <label>Parent property (shown above the name, optional)</label>
+          <input id="f-hotel_name" value="${escapeAttr(s.hotel_name || '')}" placeholder="Thavorn Beach Village" />
+        </div>
+        <div class="field">
+          <label>Tagline</label>
+          <input id="f-tagline" value="${escapeAttr(s.tagline || '')}" placeholder="A short line shown under the name (optional)" />
+        </div>
+        <div class="field">
+          <label>Currency symbol</label>
+          <input id="f-currency" value="${escapeAttr(s.currency || '')}" placeholder="THB" style="max-width:140px;" />
+        </div>
         <div class="field">
           <label>Background photo</label>
           <div class="image-upload">
@@ -571,7 +592,17 @@
       if (uploading) { alert('Please wait for the photo to finish uploading before saving.'); return; }
       const msg = main.querySelector('#home-save-msg');
       try {
-        await api('/admin/settings', { method: 'PUT', body: JSON.stringify({ home_background_image: main.querySelector('#bg-value').value || '' }) });
+        await api('/admin/settings', {
+          method: 'PUT',
+          body: JSON.stringify({
+            restaurant_name: main.querySelector('#f-restaurant_name').value || '',
+            logo_text: main.querySelector('#f-logo_text').value || '',
+            hotel_name: main.querySelector('#f-hotel_name').value || '',
+            tagline: main.querySelector('#f-tagline').value || '',
+            currency: main.querySelector('#f-currency').value || '',
+            home_background_image: main.querySelector('#bg-value').value || '',
+          }),
+        });
         await loadAll();
         msg.textContent = 'Saved ✓';
         setTimeout(() => { if (msg) msg.textContent = ''; }, 2500);
