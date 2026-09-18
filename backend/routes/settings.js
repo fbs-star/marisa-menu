@@ -6,7 +6,7 @@ const { normalizeImage, imageUrl } = require('../helpers');
 const router = express.Router();
 
 // Settings a client is allowed to read/write through this admin endpoint.
-const ALLOWED_KEYS = ['restaurant_name', 'hotel_name', 'currency', 'home_background_image'];
+const ALLOWED_KEYS = ['restaurant_name', 'hotel_name', 'currency', 'home_background_image', 'tagline', 'logo_text'];
 
 router.get('/', requireAuth, async (req, res) => {
   const rows = await db.all('SELECT key, value FROM settings');
