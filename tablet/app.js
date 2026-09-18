@@ -97,7 +97,8 @@
         <div class="home-overlay">
           <div class="home-brand">
             <div class="home-hotel">${escapeHtml(state.menu.hotel_name || '')}</div>
-            <div class="home-name">${escapeHtml(state.menu.restaurant_name || 'Menu')}</div>
+            <div class="home-name">${escapeHtml(state.menu.logo_text || state.menu.restaurant_name || 'Menu')}</div>
+            ${state.menu.tagline ? `<div class="home-tagline">${escapeHtml(state.menu.tagline)}</div>` : ''}
           </div>
           <div class="home-buttons">
             <button class="home-btn" data-go="food">${escapeHtml(t('foodMenu'))}</button>

@@ -324,6 +324,14 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
   text-shadow: 0 2px 18px rgba(0,0,0,0.4);
 }
 body[data-lang="th"] .home-name, body[data-lang="zh"] .home-name, [dir="rtl"] .home-name { font-family: inherit; }
+.home-tagline {
+  font-size: 15px;
+  color: #fff;
+  opacity: 0.85;
+  max-width: 420px;
+  line-height: 1.5;
+  margin-top: -4px;
+}
 
 .home-buttons {
   display: flex;
