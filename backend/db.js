@@ -240,6 +240,8 @@ function initDb() {
         default_language: 'en',
         currency: 'THB',
         home_background_image: '',
+        tagline: '',
+        logo_text: '',
       };
       for (const [k, v] of Object.entries(defaultSettings)) {
         await run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [k, v]);
