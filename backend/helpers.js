@@ -1,5 +1,13 @@
 const LANGS = ['en', 'th', 'ru', 'zh', 'ar'];
 
+// The set of top-level guest-facing menus a category/promotion can belong
+// to. 'food' is the fallback for anything unset or unrecognized.
+const MENU_GROUPS = ['food', 'drink', 'wine'];
+
+function normalizeMenuGroup(value) {
+  return MENU_GROUPS.includes(value) ? value : 'food';
+}
+
 // New uploads go to Cloudinary and the `image` column stores the full
 // https:// URL Cloudinary returns. Older rows (from before this migration)
 // may still hold a bare local filename like "abc123.jpg" from the old
@@ -29,7 +37,7 @@ function nestCategory(row) {
     name: pick(row, 'name'),
     description: pick(row, 'desc'),
     image: imageUrl(row.image),
-    menu_group: row.menu_group === 'drink' ? 'drink' : 'food',
+    menu_group: normalizeMenuGroup(row.menu_group),
     is_new: !!row.is_new,
     is_signature: !!row.is_signature,
     published: !!row.published,
@@ -44,7 +52,7 @@ function nestPromotion(row) {
     title: pick(row, 'title'),
     subtitle: pick(row, 'subtitle'),
     image: imageUrl(row.image),
-    menu_group: row.menu_group === 'drink' ? 'drink' : 'food',
+    menu_group: normalizeMenuGroup(row.menu_group),
     published: !!row.published,
     sort_order: row.sort_order,
   };
@@ -102,4 +110,4 @@ function boolInt(v) {
   return v ? 1 : 0;
 }
 
-module.exports = { LANGS, nestCategory, nestItem, nestPromotion, flattenTranslatable, boolInt, normalizeImage, imageUrl };
+module.exports = { LANGS, MENU_GROUPS, normalizeMenuGroup, nestCategory, nestItem, nestPromotion, flattenTranslatable, boolInt, normalizeImage, imageUrl };
