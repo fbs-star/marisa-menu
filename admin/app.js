@@ -365,17 +365,18 @@
     const main = document.getElementById('main');
     main.innerHTML = `
       <div class="page-header">
-        <div><h1>Promotions</h1><p>Banner-style promotions shown when a guest taps "Promotion" on the home screen.</p></div>
+        <div><h1>Promotions</h1><p>Banner-style promotions shown on the Food or Drinks menu page (pick which one below), and on the "Promotion" tab from the home screen.</p></div>
         <button class="btn btn-primary" id="add-promo-btn">+ New Promotion</button>
       </div>
       <div class="card">
         <table>
-          <thead><tr><th>Banner</th><th>Title (EN)</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Banner</th><th>Title (EN)</th><th>Group</th><th>Status</th><th></th></tr></thead>
           <tbody>
             ${state.promotions.map((p, idx) => `
               <tr>
                 <td><div class="promo-thumb" style="${p.image ? `background-image:url('${p.image}')` : ''}">${p.image ? '' : '🎉'}</div></td>
                 <td>${escapeHtml(p.title.en)}</td>
+                <td><span class="pill ${p.menu_group === 'drink' ? 'pill-off' : 'pill-on'}">${p.menu_group === 'drink' ? 'Drinks' : 'Food'}</span></td>
                 <td><span class="pill ${p.published ? 'pill-on' : 'pill-off'}">${p.published ? 'Published' : 'Hidden'}</span></td>
                 <td>
                   <button class="icon-btn" data-move-up="${p.id}" ${idx === 0 ? 'disabled' : ''}>↑</button>
@@ -385,7 +386,7 @@
                   <button class="icon-btn" data-del-promo="${p.id}">Delete</button>
                 </td>
               </tr>
-            `).join('') || `<tr><td colspan="4" class="empty-hint">No promotions yet.</td></tr>`}
+            `).join('') || `<tr><td colspan="5" class="empty-hint">No promotions yet.</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -416,12 +417,19 @@
 
   function openPromotionModal(promo) {
     const isNew = !promo;
-    const data = promo || { title: {}, subtitle: {}, image: null };
+    const data = promo || { title: {}, subtitle: {}, image: null, menu_group: 'food' };
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     backdrop.innerHTML = `
       <div class="modal">
         <h2>${isNew ? 'New Promotion' : 'Edit Promotion'}</h2>
+        <div class="field">
+          <label>Show on</label>
+          <select data-field="menu_group">
+            <option value="food" ${data.menu_group !== 'drink' ? 'selected' : ''}>Food Menu</option>
+            <option value="drink" ${data.menu_group === 'drink' ? 'selected' : ''}>Drinks Menu</option>
+          </select>
+        </div>
         <div class="field">
           <label>Banner image</label>
           <div class="image-upload">
@@ -484,7 +492,12 @@
         title[l.code] = backdrop.querySelector(`[data-field="title_${l.code}"]`)?.value || '';
         subtitle[l.code] = backdrop.querySelector(`[data-field="subtitle_${l.code}"]`)?.value || '';
       });
-      const payload = { title, subtitle, image: backdrop.querySelector('[data-field="image"]').value || null };
+      const payload = {
+        title,
+        subtitle,
+        image: backdrop.querySelector('[data-field="image"]').value || null,
+        menu_group: backdrop.querySelector('[data-field="menu_group"]').value,
+      };
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
       try {
