@@ -253,7 +253,10 @@
 
   // ---------------- Promo banner (inline on the food/drinks menu) ----------------
   function renderPromoBanner() {
-    const promotions = state.menu.promotions || [];
+    // Only show promotions tagged for whichever menu (food/drink) the guest
+    // is currently viewing, so a food promo never appears on the drinks menu
+    // and vice versa.
+    const promotions = (state.menu.promotions || []).filter((p) => (p.menu_group || 'food') === state.menuGroup);
     if (!promotions.length) return '';
     return `
       <div class="promo-banner-strip" id="promo-banner-strip">
