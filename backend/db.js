@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS promotions (
   subtitle_zh TEXT NOT NULL DEFAULT '',
   subtitle_ar TEXT NOT NULL DEFAULT '',
   image TEXT,
+  menu_group TEXT NOT NULL DEFAULT 'food',
   published INTEGER NOT NULL DEFAULT 1,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -208,6 +209,15 @@ function initDb() {
       const colNames = cols.map((c) => c.name);
       if (!colNames.includes('menu_group')) {
         await exec("ALTER TABLE categories ADD COLUMN menu_group TEXT NOT NULL DEFAULT 'food'");
+      }
+
+      // Same migration for promotions.menu_group, so Food/Drink promo banners
+      // can be scoped independently on databases created before this column
+      // existed.
+      const promoCols = await all("PRAGMA table_info(promotions)");
+      const promoColNames = promoCols.map((c) => c.name);
+      if (!promoColNames.includes('menu_group')) {
+        await exec("ALTER TABLE promotions ADD COLUMN menu_group TEXT NOT NULL DEFAULT 'food'");
       }
 
       // Seed a default admin user if none exists yet.

@@ -44,6 +44,7 @@ function nestPromotion(row) {
     title: pick(row, 'title'),
     subtitle: pick(row, 'subtitle'),
     image: imageUrl(row.image),
+    menu_group: row.menu_group === 'drink' ? 'drink' : 'food',
     published: !!row.published,
     sort_order: row.sort_order,
   };
