@@ -420,7 +420,7 @@ body[data-lang="th"] .promo-card-title, body[data-lang="zh"] .promo-card-title, 
 .promo-card-subtitle { font-size: 13px; color: var(--color-gold); margin-top: 2px; font-weight: 600; }
 
 .promo-modal { max-width: 560px; }
-.promo-modal-image { width: 100%; aspect-ratio: 4/3; background: var(--color-primary) center/cover no-repeat; }
+.promo-modal-image { width: 100%; aspect-ratio: 4/3; background: var(--color-primary) center/contain no-repeat; }
 
 @media (max-width: 900px) {
   .category-rail { width: 200px; }
