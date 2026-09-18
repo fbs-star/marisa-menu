@@ -372,7 +372,7 @@ body[data-lang="th"] .home-name, body[data-lang="zh"] .home-name, [dir="rtl"] .h
 }
 .promo-banner-image {
   width: 100%;
-  aspect-ratio: 297 / 210; /* A4 landscape, to match uploaded promo artwork without odd cropping */
+  aspect-ratio: 21 / 8;
   background: var(--color-primary) center/cover no-repeat;
   display: flex;
   align-items: flex-end;
