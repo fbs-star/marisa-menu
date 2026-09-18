@@ -11,6 +11,20 @@
     ['is_must_try', 'Must Try'], ['is_best_seller', 'Best Seller'], ['is_our_favorite', 'Our Favorite'],
     ['is_healthy', 'Healthy'],
   ];
+  // The top-level guest-facing menus a category or promotion can belong to.
+  // Shared by both the Categories and Promotions pages so the option list
+  // and pill styling stay in sync everywhere.
+  const MENU_GROUPS = [
+    { value: 'food', label: 'Food Menu', pillLabel: 'Food', pillClass: 'pill-on' },
+    { value: 'drink', label: 'Drinks Menu', pillLabel: 'Drinks', pillClass: 'pill-off' },
+    { value: 'wine', label: 'Wine Menu', pillLabel: 'Wine', pillClass: 'pill-wine' },
+  ];
+  function menuGroupInfo(v) {
+    return MENU_GROUPS.find((g) => g.value === v) || MENU_GROUPS[0];
+  }
+  function menuGroupOptionsHtml(selected) {
+    return MENU_GROUPS.map((g) => `<option value="${g.value}" ${g.value === selected ? 'selected' : ''}>${g.label}</option>`).join('');
+  }
 
   let state = { user: null, page: 'categories', categories: [], items: [], promotions: [], settings: {}, activeCategoryId: null };
 
@@ -111,7 +125,7 @@
               <tr>
                 <td>${escapeHtml(c.name.en)}</td>
                 <td>${escapeHtml(c.name.th)}</td>
-                <td><span class="pill ${c.menu_group === 'drink' ? 'pill-off' : 'pill-on'}">${c.menu_group === 'drink' ? 'Drinks' : 'Food'}</span></td>
+                <td><span class="pill ${menuGroupInfo(c.menu_group).pillClass}">${menuGroupInfo(c.menu_group).pillLabel}</span></td>
                 <td>${state.items.filter((i) => i.category_id === c.id).length}</td>
                 <td><span class="pill ${c.published ? 'pill-on' : 'pill-off'}">${c.published ? 'Published' : 'Hidden'}</span></td>
                 <td>
@@ -161,10 +175,7 @@
         <h2>${isNew ? 'New Category' : 'Edit Category'}</h2>
         <div class="field">
           <label>Menu Group</label>
-          <select data-field="menu_group">
-            <option value="food" ${data.menu_group !== 'drink' ? 'selected' : ''}>Food Menu</option>
-            <option value="drink" ${data.menu_group === 'drink' ? 'selected' : ''}>Drinks Menu</option>
-          </select>
+          <select data-field="menu_group">${menuGroupOptionsHtml(data.menu_group || 'food')}</select>
         </div>
         <div class="tabs">${LANGS.map((l, i) => `<button class="tab-btn ${i === 0 ? 'active' : ''}" data-tab="${l.code}">${l.label}</button>`).join('')}</div>
         ${LANGS.map((l, i) => `
@@ -365,7 +376,7 @@
     const main = document.getElementById('main');
     main.innerHTML = `
       <div class="page-header">
-        <div><h1>Promotions</h1><p>Banner-style promotions shown on the Food or Drinks menu page (pick which one below), and on the "Promotion" tab from the home screen.</p></div>
+        <div><h1>Promotions</h1><p>Banner-style promotions shown on the Food, Drinks, or Wine menu page (pick which one below), and on the "Promotion" tab from the home screen.</p></div>
         <button class="btn btn-primary" id="add-promo-btn">+ New Promotion</button>
       </div>
       <div class="card">
@@ -376,7 +387,7 @@
               <tr>
                 <td><div class="promo-thumb" style="${p.image ? `background-image:url('${p.image}')` : ''}">${p.image ? '' : '🎉'}</div></td>
                 <td>${escapeHtml(p.title.en)}</td>
-                <td><span class="pill ${p.menu_group === 'drink' ? 'pill-off' : 'pill-on'}">${p.menu_group === 'drink' ? 'Drinks' : 'Food'}</span></td>
+                <td><span class="pill ${menuGroupInfo(p.menu_group).pillClass}">${menuGroupInfo(p.menu_group).pillLabel}</span></td>
                 <td><span class="pill ${p.published ? 'pill-on' : 'pill-off'}">${p.published ? 'Published' : 'Hidden'}</span></td>
                 <td>
                   <button class="icon-btn" data-move-up="${p.id}" ${idx === 0 ? 'disabled' : ''}>↑</button>
@@ -425,10 +436,7 @@
         <h2>${isNew ? 'New Promotion' : 'Edit Promotion'}</h2>
         <div class="field">
           <label>Show on</label>
-          <select data-field="menu_group">
-            <option value="food" ${data.menu_group !== 'drink' ? 'selected' : ''}>Food Menu</option>
-            <option value="drink" ${data.menu_group === 'drink' ? 'selected' : ''}>Drinks Menu</option>
-          </select>
+          <select data-field="menu_group">${menuGroupOptionsHtml(data.menu_group || 'food')}</select>
         </div>
         <div class="field">
           <label>Banner image</label>
@@ -519,7 +527,7 @@
     const bg = state.settings.home_background_image;
     main.innerHTML = `
       <div class="page-header">
-        <div><h1>Home Screen</h1><p>The background photo guests see on the welcome screen, before they pick Food Menu / Drinks Menu / Promotion.</p></div>
+        <div><h1>Home Screen</h1><p>The background photo guests see on the welcome screen, before they pick Food Menu / Drinks Menu / Wine Menu / Promotion.</p></div>
       </div>
       <div class="card" style="padding:24px;max-width:520px;">
         <div class="field">

@@ -78,6 +78,7 @@ tr.row-draft { opacity: 0.55; }
 .pill-on { background: #e2f3e6; color: #1f6b3a; }
 .pill-off { background: #f1ede0; color: #8a7237; }
 .pill-sold { background: #fbe8e3; color: var(--danger); }
+.pill-wine { background: #f3e6ec; color: #8a2e52; }
 
 .icon-btn { background: none; border: none; color: var(--ink-soft); font-size: 14px; padding: 4px 8px; border-radius: 6px; }
 .icon-btn:hover { background: #eef1ef; color: var(--ink); }
