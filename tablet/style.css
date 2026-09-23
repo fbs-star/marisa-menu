@@ -46,24 +46,79 @@
   --font-display: 'DB Penthai', 'Cormorant Garamond', 'Noto Serif Thai', serif;
 }
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; }
+/*
+ * Cross-platform kiosk hardening
+ * ------------------------------
+ * This app is meant to look and behave identically whether it's opened in
+ * Safari on an iPad or Chrome on an Android tablet — same font sizes, same
+ * full-screen fit, no iOS-only bounce/callout/zoom quirks that Android
+ * doesn't share. Every rule in this block exists to erase one specific
+ * platform difference rather than to add a visual effect.
+ */
+html {
+  /* iOS/Android both auto-boost font sizes sometimes when they guess text is
+     "too small to read"; that boost isn't consistent between the two, so the
+     exact same CSS can render at different sizes. Force it off everywhere. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  /* A kiosk menu, not a document: no accidental text selection, no iOS
+     press-and-hold "Copy / Look Up" callout — a long touch does the same
+     (nothing extra) on both platforms instead of a platform-specific popup. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+html, body {
+  height: 100%;
+  /* iOS Safari's address bar/toolbar grows and shrinks, changing what 100vh
+     means from moment to moment; 100dvh is the "actually visible right now"
+     height on both iOS Safari and Android Chrome, so the app fills the same
+     visible area on either. Browsers that don't know `dvh` just keep the
+     100% above instead of failing. */
+  height: 100dvh;
+  /* No rubber-band bounce past the edges and no pull-to-refresh — iOS shows
+     a bounce here by default and Android doesn't, so this makes both do
+     nothing, rather than one bouncing and the other not. */
+  overscroll-behavior: none;
+}
 body {
   margin: 0;
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-latin);
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Belt-and-suspenders alongside the viewport meta tag: no double-tap-to-zoom
+     or pinch-zoom gesture delay on either platform. */
+  touch-action: manipulation;
 }
 body[data-lang="th"] { font-family: var(--font-th); }
 body[data-lang="zh"] { font-family: var(--font-zh); }
 body[data-lang="ar"] { font-family: var(--font-ar); }
 body[dir="rtl"] { direction: rtl; }
 
-#app { height: 100vh; display: flex; flex-direction: column; }
+#app {
+  height: 100vh; height: 100dvh;
+  display: flex; flex-direction: column;
+  /* Some tablets have rounded screen corners or a home-indicator bar (iPad)
+     or a camera cut-out (some Android tablets); this keeps content clear of
+     those on whichever device it's running on, instead of only on one. */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
 
 .loading-screen {
-  height: 100vh; display: flex; align-items: center; justify-content: center;
+  /* Fills #app's own box, which already accounts for the real viewport
+     height and safe-area insets — sizing to the viewport a second time here
+     would double-count that padding and could overflow. */
+  height: 100%; display: flex; align-items: center; justify-content: center;
   background: var(--color-primary);
 }
 .spinner {
@@ -272,7 +327,10 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
 
 /* ---------- Home / welcome screen ---------- */
 .home-screen {
-  height: 100vh;
+  /* Same reasoning as .loading-screen above: fill the parent #app box
+     rather than re-measuring the viewport, so safe-area padding on #app
+     isn't counted twice. */
+  height: 100%;
   width: 100%;
   background: linear-gradient(150deg, var(--color-primary), var(--color-primary-dark) 65%), var(--color-primary);
   background-size: cover;
