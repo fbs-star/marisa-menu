@@ -384,18 +384,28 @@
   function openPromoModal(promo) {
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop promo-modal-backdrop';
-    backdrop.innerHTML = `
-      <div class="modal promo-modal">
-        <button class="modal-close" aria-label="Close">&times;</button>
-        ${promo.image
-          ? `<img class="promo-modal-image" src="${promo.image}" alt="" />`
-          : `<div class="promo-modal-image placeholder"></div>`}
-        <div class="modal-body">
-          <div class="item-name">${escapeHtml(fmt(promo.title))}</div>
-          ${fmt(promo.subtitle) ? `<div class="item-desc">${escapeHtml(fmt(promo.subtitle))}</div>` : ''}
+    // The promo artwork already carries the title/price/offer copy baked into the
+    // image itself (that's how the promo images are designed), so when there's an
+    // image we let it fill the screen edge-to-edge with just a close button on top —
+    // no separate text bar underneath duplicating what the image already says. The
+    // text block is only shown as a fallback for a promo that has no image yet.
+    backdrop.innerHTML = promo.image
+      ? `
+        <div class="modal promo-modal promo-modal-fullscreen">
+          <button class="modal-close" aria-label="Close">&times;</button>
+          <img class="promo-modal-image" src="${promo.image}" alt="${escapeHtml(fmt(promo.title))}" />
         </div>
-      </div>
-    `;
+      `
+      : `
+        <div class="modal promo-modal">
+          <button class="modal-close" aria-label="Close">&times;</button>
+          <div class="promo-modal-image placeholder"></div>
+          <div class="modal-body">
+            <div class="item-name">${escapeHtml(fmt(promo.title))}</div>
+            ${fmt(promo.subtitle) ? `<div class="item-desc">${escapeHtml(fmt(promo.subtitle))}</div>` : ''}
+          </div>
+        </div>
+      `;
     backdrop.addEventListener('click', (e) => {
       if (e.target === backdrop || e.target.closest('.modal-close')) backdrop.remove();
     });
