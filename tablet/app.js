@@ -30,6 +30,10 @@
     activeCategoryId: null,
   };
 
+  // Auto-advance timer for the inline promo banner strip (see setupPromoBannerAutoScroll).
+  // Cleared at the top of every render() so a stale timer never outlives the DOM it scrolls.
+  let promoBannerTimer = null;
+
   function t(key, ...args) {
     const s = UI_STRINGS[state.lang] || UI_STRINGS.en;
     const v = s[key];
@@ -48,6 +52,7 @@
   }
 
   function render() {
+    if (promoBannerTimer) { clearInterval(promoBannerTimer); promoBannerTimer = null; }
     const app = document.getElementById('app');
     document.body.setAttribute('data-lang', state.lang);
     document.body.setAttribute('dir', RTL_LANGS.has(state.lang) ? 'rtl' : 'ltr');
@@ -175,6 +180,39 @@
       const item = activeCategory.items.find((i) => i.id === Number(card.dataset.item));
       if (item) openItemModal(item);
     });
+
+    setupPromoBannerAutoScroll();
+  }
+
+  // Auto-advances the inline promo banner strip one card at a time, looping back to the
+  // start once it reaches the end, so promotions cycle on their own on an unattended
+  // tablet. Pauses for a while after a guest manually scrolls/touches it, then resumes.
+  function setupPromoBannerAutoScroll() {
+    const strip = document.getElementById('promo-banner-strip');
+    if (!strip) return;
+    const cards = strip.querySelectorAll('.promo-banner-card');
+    if (cards.length < 2) return;
+
+    let paused = false;
+    let resumeTimeout = null;
+    const pauseForAWhile = () => {
+      paused = true;
+      clearTimeout(resumeTimeout);
+      resumeTimeout = setTimeout(() => { paused = false; }, 8000);
+    };
+    strip.addEventListener('pointerdown', pauseForAWhile);
+    strip.addEventListener('wheel', pauseForAWhile, { passive: true });
+
+    const gap = parseFloat(getComputedStyle(strip).columnGap || getComputedStyle(strip).gap || '0') || 0;
+
+    promoBannerTimer = setInterval(() => {
+      if (paused) return;
+      const maxScroll = strip.scrollWidth - strip.clientWidth;
+      if (maxScroll <= 0) return;
+      const step = cards[0].getBoundingClientRect().width + gap;
+      const next = strip.scrollLeft + step;
+      strip.scrollTo({ left: next >= maxScroll - 2 ? 0 : next, behavior: 'smooth' });
+    }, 5000);
   }
 
   function renderCategoryContent(category) {
