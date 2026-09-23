@@ -34,6 +34,13 @@
   // Cleared at the top of every render() so a stale timer never outlives the DOM it scrolls.
   let promoBannerTimer = null;
 
+  // render() rebuilds the whole screen from an innerHTML string, including the left
+  // category rail, so a plain re-render (tapping a category, switching language, etc.)
+  // would otherwise snap the rail's scroll position back to the top every time. We
+  // capture its scrollTop right before tearing the DOM down and restore it right after,
+  // so the rail stays exactly where the guest left it instead of "bouncing back".
+  let categoryRailScrollTop = 0;
+
   function t(key, ...args) {
     const s = UI_STRINGS[state.lang] || UI_STRINGS.en;
     const v = s[key];
@@ -53,6 +60,8 @@
 
   function render() {
     if (promoBannerTimer) { clearInterval(promoBannerTimer); promoBannerTimer = null; }
+    const existingRail = document.getElementById('category-rail');
+    if (existingRail) categoryRailScrollTop = existingRail.scrollTop;
     const app = document.getElementById('app');
     document.body.setAttribute('data-lang', state.lang);
     document.body.setAttribute('dir', RTL_LANGS.has(state.lang) ? 'rtl' : 'ltr');
@@ -118,7 +127,7 @@
     app.querySelectorAll('[data-go]').forEach((btn) => btn.addEventListener('click', () => {
       const go = btn.dataset.go;
       if (go === 'promotions') { state.view = 'promotions'; }
-      else { state.view = 'menu'; state.menuGroup = go; state.activeCategoryId = null; }
+      else { state.view = 'menu'; state.menuGroup = go; state.activeCategoryId = null; categoryRailScrollTop = 0; }
       render();
     }));
   }
@@ -156,6 +165,8 @@
         </div>
       </div>
     `;
+
+    document.getElementById('category-rail').scrollTop = categoryRailScrollTop;
 
     bindLangSwitcher(app);
     document.getElementById('back-home').addEventListener('click', () => { state.view = 'home'; render(); });
