@@ -32,6 +32,7 @@ input, textarea, select { font-family: inherit; }
 .field input, .field select, .field textarea {
   width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;
 }
+.field-hint { font-size: 12.5px; color: var(--ink-soft); margin: -2px 0 8px; line-height: 1.4; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600; font-size: 14px;
@@ -118,4 +119,7 @@ tr.row-draft { opacity: 0.55; }
   display: flex; align-items: center; justify-content: center; color: var(--ink-soft); font-size: 18px; overflow: hidden;
 }
 .promo-preview { width: 160px; height: 90px; border-radius: 10px; background-size: contain; }
+/* A4 portrait ratio (√2:1, ~1240x1754px) so this preview box reflects the true
+   shape of the full-screen popup guests see, not the landscape banner shape. */
+.promo-detail-preview { width: 100px; height: 141px; border-radius: 10px; background-size: contain; }
 .home-bg-preview { width: 220px; height: 124px; border-radius: 10px; }

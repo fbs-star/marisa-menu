@@ -428,7 +428,7 @@
 
   function openPromotionModal(promo) {
     const isNew = !promo;
-    const data = promo || { title: {}, subtitle: {}, image: null, menu_group: 'food' };
+    const data = promo || { title: {}, subtitle: {}, image: null, detail_image: null, menu_group: 'food' };
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     backdrop.innerHTML = `
@@ -440,11 +440,21 @@
         </div>
         <div class="field">
           <label>Banner image</label>
+          <p class="field-hint">Shown as a small landscape card — on the menu page's promo strip and on the Promotion tab's grid.</p>
           <div class="image-upload">
             <div class="image-preview promo-preview" id="img-preview" style="${data.image ? `background-image:url('${data.image}')` : ''}">${data.image ? '' : '🎉'}</div>
             <input type="file" accept="image/*" id="img-input" />
           </div>
           <input type="hidden" data-field="image" value="${escapeAttr(data.image || '')}" />
+        </div>
+        <div class="field">
+          <label>Full-screen image (A4)</label>
+          <p class="field-hint">Shown edge-to-edge, filling the whole tablet screen, when a guest taps this promotion — like a printed A4 poster. Use a tall A4-portrait image (e.g. 1240 × 1754px or any size in that ~1:1.4 ratio) with all your text baked into the artwork; it displays at its own proportions, never cropped. Leave this empty to just reuse the banner image above.</p>
+          <div class="image-upload">
+            <div class="image-preview promo-detail-preview" id="detail-img-preview" style="${data.detail_image ? `background-image:url('${data.detail_image}')` : ''}">${data.detail_image ? '' : '📄'}</div>
+            <input type="file" accept="image/*" id="detail-img-input" />
+          </div>
+          <input type="hidden" data-field="detail_image" value="${escapeAttr(data.detail_image || '')}" />
         </div>
         <div class="tabs">${LANGS.map((l, i) => `<button class="tab-btn ${i === 0 ? 'active' : ''}" data-tab="${l.code}">${l.label}</button>`).join('')}</div>
         ${LANGS.map((l, i) => `
@@ -462,39 +472,48 @@
     document.body.appendChild(backdrop);
     setupTabs(backdrop);
 
-    let uploading = false;
+    let uploadsInFlight = 0;
     const saveBtn = backdrop.querySelector('[data-save]');
     const savedSaveLabel = saveBtn.textContent;
 
-    backdrop.querySelector('#img-input').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const fd = new FormData();
-      fd.append('image', file);
-      uploading = true;
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'Uploading photo…';
-      const preview = backdrop.querySelector('#img-preview');
-      const prevPreviewText = preview.textContent;
-      preview.textContent = 'Uploading…';
-      try {
-        const res = await api('/admin/upload', { method: 'POST', body: fd });
-        backdrop.querySelector('[data-field="image"]').value = res.url;
-        preview.style.backgroundImage = `url('${res.url}')`;
-        preview.textContent = '';
-      } catch (err) {
-        preview.textContent = prevPreviewText;
-        alert('Image upload failed: ' + err.message);
-      } finally {
-        uploading = false;
-        saveBtn.disabled = false;
-        saveBtn.textContent = savedSaveLabel;
-      }
-    });
+    // Shared by both the banner-image and full-screen-image uploaders below,
+    // so picking a photo for either field behaves the same way (disables Save
+    // while it uploads, updates that field's own preview + hidden input).
+    function wireImageUpload(inputId, previewId, fieldName, uploadingLabel) {
+      backdrop.querySelector(inputId).addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const fd = new FormData();
+        fd.append('image', file);
+        uploadsInFlight += 1;
+        saveBtn.disabled = true;
+        saveBtn.textContent = uploadingLabel;
+        const preview = backdrop.querySelector(previewId);
+        const prevPreviewText = preview.textContent;
+        preview.textContent = 'Uploading…';
+        try {
+          const res = await api('/admin/upload', { method: 'POST', body: fd });
+          backdrop.querySelector(`[data-field="${fieldName}"]`).value = res.url;
+          preview.style.backgroundImage = `url('${res.url}')`;
+          preview.textContent = '';
+        } catch (err) {
+          preview.textContent = prevPreviewText;
+          alert('Image upload failed: ' + err.message);
+        } finally {
+          uploadsInFlight -= 1;
+          if (uploadsInFlight === 0) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = savedSaveLabel;
+          }
+        }
+      });
+    }
+    wireImageUpload('#img-input', '#img-preview', 'image', 'Uploading photo…');
+    wireImageUpload('#detail-img-input', '#detail-img-preview', 'detail_image', 'Uploading photo…');
 
     backdrop.querySelector('[data-cancel]').addEventListener('click', () => backdrop.remove());
     saveBtn.addEventListener('click', async () => {
-      if (uploading) { alert('Please wait for the banner photo to finish uploading before saving.'); return; }
+      if (uploadsInFlight > 0) { alert('Please wait for the photo to finish uploading before saving.'); return; }
       const title = {}, subtitle = {};
       LANGS.forEach((l) => {
         title[l.code] = backdrop.querySelector(`[data-field="title_${l.code}"]`)?.value || '';
@@ -504,6 +523,7 @@
         title,
         subtitle,
         image: backdrop.querySelector('[data-field="image"]').value || null,
+        detail_image: backdrop.querySelector('[data-field="detail_image"]').value || null,
         menu_group: backdrop.querySelector('[data-field="menu_group"]').value,
       };
       saveBtn.disabled = true;
