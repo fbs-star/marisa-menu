@@ -338,7 +338,9 @@
     backdrop.innerHTML = `
       <div class="modal promo-modal">
         <button class="modal-close" aria-label="Close">&times;</button>
-        <div class="promo-modal-image" style="${promo.image ? `background-image:url('${promo.image}')` : ''}"></div>
+        ${promo.image
+          ? `<img class="promo-modal-image" src="${promo.image}" alt="" />`
+          : `<div class="promo-modal-image placeholder"></div>`}
         <div class="modal-body">
           <div class="item-name">${escapeHtml(fmt(promo.title))}</div>
           ${fmt(promo.subtitle) ? `<div class="item-desc">${escapeHtml(fmt(promo.subtitle))}</div>` : ''}
