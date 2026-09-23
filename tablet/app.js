@@ -384,16 +384,22 @@
   function openPromoModal(promo) {
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop promo-modal-backdrop';
+    // Promotions can have two images: `image` is the compact landscape thumbnail
+    // used in the banner strip / grid card, and `detail_image` is an optional
+    // taller A4-portrait poster meant for this full-screen popup — set from the
+    // admin's "Full-screen image (A4)" field. Fall back to the card image when
+    // no separate detail image was chosen, so older promotions still work.
+    const fullImage = promo.detail_image || promo.image;
     // The promo artwork already carries the title/price/offer copy baked into the
     // image itself (that's how the promo images are designed), so when there's an
     // image we let it fill the screen edge-to-edge with just a close button on top —
     // no separate text bar underneath duplicating what the image already says. The
     // text block is only shown as a fallback for a promo that has no image yet.
-    backdrop.innerHTML = promo.image
+    backdrop.innerHTML = fullImage
       ? `
         <div class="modal promo-modal promo-modal-fullscreen">
           <button class="modal-close" aria-label="Close">&times;</button>
-          <img class="promo-modal-image" src="${promo.image}" alt="${escapeHtml(fmt(promo.title))}" />
+          <img class="promo-modal-image" src="${fullImage}" alt="${escapeHtml(fmt(promo.title))}" />
         </div>
       `
       : `
