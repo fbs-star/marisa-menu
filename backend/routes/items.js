@@ -39,6 +39,11 @@ function buildBadgeValues(body) {
   return out;
 }
 
+const UNITS = ['bottle', 'glass'];
+function normalizeUnit(value) {
+  return UNITS.includes(value) ? value : null;
+}
+
 router.post('/', requireAuth, async (req, res) => {
   const body = req.body || {};
   const flatNames = flattenTranslatable(body, TRANSLATABLE_FIELDS);
@@ -53,6 +58,7 @@ router.post('/', requireAuth, async (req, res) => {
     price: body.price ?? null,
     price_calorie: body.price_calorie || null,
     ...priceNotes,
+    unit: normalizeUnit(body.unit),
     image: normalizeImage(body.image),
     food_color_code: body.food_color_code ?? null,
     ...buildBadgeValues(body),
@@ -64,12 +70,12 @@ router.post('/', requireAuth, async (req, res) => {
   const info = await db.run(`
     INSERT INTO items (external_id, category_id, name_en, name_th, name_ru, name_zh, name_ar,
       desc_en, desc_th, desc_ru, desc_zh, desc_ar, price, price_calorie,
-      price_note_en, price_note_th, price_note_ru, price_note_zh, image, food_color_code,
+      price_note_en, price_note_th, price_note_ru, price_note_zh, unit, image, food_color_code,
       is_new, is_signature, is_chefs_special, is_must_try, is_best_seller, is_our_favorite,
       is_healthy, is_snooze, preparation_time, stock, published, sort_order)
     VALUES (@external_id, @category_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
       @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @price, @price_calorie,
-      @price_note_en, @price_note_th, @price_note_ru, @price_note_zh, @image, @food_color_code,
+      @price_note_en, @price_note_th, @price_note_ru, @price_note_zh, @unit, @image, @food_color_code,
       @is_new, @is_signature, @is_chefs_special, @is_must_try, @is_best_seller, @is_our_favorite,
       @is_healthy, @is_snooze, @preparation_time, @stock, @published, @sort_order)
   `, values);
@@ -91,6 +97,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     price: body.price ?? existing.price,
     price_calorie: body.price_calorie ?? existing.price_calorie,
     ...priceNotes,
+    unit: body.unit !== undefined ? normalizeUnit(body.unit) : existing.unit,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
     food_color_code: body.food_color_code ?? existing.food_color_code,
     ...buildBadgeValues(body),
@@ -105,7 +112,7 @@ router.put('/:id', requireAuth, async (req, res) => {
       desc_en=@desc_en, desc_th=@desc_th, desc_ru=@desc_ru, desc_zh=@desc_zh, desc_ar=@desc_ar,
       price=@price, price_calorie=@price_calorie,
       price_note_en=@price_note_en, price_note_th=@price_note_th, price_note_ru=@price_note_ru, price_note_zh=@price_note_zh,
-      image=@image, food_color_code=@food_color_code,
+      unit=@unit, image=@image, food_color_code=@food_color_code,
       is_new=@is_new, is_signature=@is_signature, is_chefs_special=@is_chefs_special, is_must_try=@is_must_try,
       is_best_seller=@is_best_seller, is_our_favorite=@is_our_favorite, is_healthy=@is_healthy, is_snooze=@is_snooze,
       preparation_time=@preparation_time, stock=@stock, published=@published, sort_order=@sort_order,
