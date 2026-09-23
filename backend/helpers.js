@@ -76,6 +76,9 @@ function nestItem(row) {
     price: row.price,
     price_calorie: row.price_calorie,
     price_note: pick(row, 'price_note'),
+    // 'bottle' | 'glass' | null — see backend/db.js migration notes. A plain
+    // code (not per-language text) so the frontend can localize the label.
+    unit: row.unit || null,
     image: imageUrl(row.image),
     food_color_code: row.food_color_code,
     badges: {

@@ -231,6 +231,18 @@ function initDb() {
         await exec('ALTER TABLE promotions ADD COLUMN detail_image TEXT');
       }
 
+      // Migration: add items.unit — a structured "sold by the bottle / by the
+      // glass" selector (values: 'bottle' | 'glass' | NULL) used mainly for
+      // wine list entries. Stored as a plain code rather than translated text
+      // so the guest tablet app can localize the label itself (see
+      // UNIT_LABELS in tablet/app.js) instead of requiring the admin to type
+      // a translation for every language on every item.
+      const itemCols = await all('PRAGMA table_info(items)');
+      const itemColNames = itemCols.map((c) => c.name);
+      if (!itemColNames.includes('unit')) {
+        await exec('ALTER TABLE items ADD COLUMN unit TEXT');
+      }
+
       // Seed a default admin user if none exists yet.
       const adminCountRow = await get('SELECT COUNT(*) AS c FROM admin_users');
       const adminCount = Number(adminCountRow.c);
