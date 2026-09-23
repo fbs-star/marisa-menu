@@ -220,6 +220,17 @@ function initDb() {
         await exec("ALTER TABLE promotions ADD COLUMN menu_group TEXT NOT NULL DEFAULT 'food'");
       }
 
+      // Migration: add promotions.detail_image — a second, optional image just
+      // for the full-screen A4-style popup guests see when they tap a promotion.
+      // The original `image` column stays the compact banner/card thumbnail (a
+      // landscape crop), while `detail_image` can be a taller A4-portrait poster
+      // that would get cropped if it were forced into that landscape thumbnail
+      // shape. When a promotion has no detail_image, the tablet app falls back
+      // to `image` so nothing breaks for existing promotions.
+      if (!promoColNames.includes('detail_image')) {
+        await exec('ALTER TABLE promotions ADD COLUMN detail_image TEXT');
+      }
+
       // Seed a default admin user if none exists yet.
       const adminCountRow = await get('SELECT COUNT(*) AS c FROM admin_users');
       const adminCount = Number(adminCountRow.c);

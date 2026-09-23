@@ -52,6 +52,13 @@ function nestPromotion(row) {
     title: pick(row, 'title'),
     subtitle: pick(row, 'subtitle'),
     image: imageUrl(row.image),
+    // Optional full-screen A4 detail image (see backend/db.js migration notes).
+    // Left null when unset (rather than falling back to `image` here) so the
+    // admin UI can tell "no detail image chosen yet" apart from "one was
+    // chosen and happens to match the banner" — callers that need a
+    // guaranteed image to display (the tablet app) fall back to `image`
+    // themselves at the point of use.
+    detail_image: imageUrl(row.detail_image),
     menu_group: normalizeMenuGroup(row.menu_group),
     published: !!row.published,
     sort_order: row.sort_order,
