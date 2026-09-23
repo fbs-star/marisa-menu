@@ -228,12 +228,13 @@
       </div>
       <div class="card">
         <table>
-          <thead><tr><th>Name (EN)</th><th>Price</th><th>Badges</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Name (EN)</th><th>Price</th><th>Sold by</th><th>Badges</th><th>Status</th><th></th></tr></thead>
           <tbody>
             ${items.map((i) => `
               <tr class="${i.published ? '' : 'row-draft'}">
                 <td>${escapeHtml(i.name.en)}</td>
                 <td>${i.price ?? '—'}</td>
+                <td>${i.unit ? (i.unit === 'bottle' ? 'Bottle' : 'Glass') : '—'}</td>
                 <td>${Object.entries(i.badges).filter(([, v]) => v).map(([k]) => (BADGES.find((b) => b[0] === k) || [k, k])[1]).join(', ') || '—'}</td>
                 <td>
                   <span class="pill ${i.published ? 'pill-on' : 'pill-off'}">${i.published ? 'Published' : 'Hidden'}</span>
@@ -246,7 +247,7 @@
                   <button class="icon-btn" data-del-item="${i.id}">Delete</button>
                 </td>
               </tr>
-            `).join('') || `<tr><td colspan="5" class="empty-hint">No items in this category yet.</td></tr>`}
+            `).join('') || `<tr><td colspan="6" class="empty-hint">No items in this category yet.</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -293,8 +294,17 @@
         `).join('')}
         <div class="grid-2">
           <div class="field"><label>Price (THB)</label><input type="number" step="1" data-field="price" value="${data.price ?? ''}" /></div>
-          <div class="field"><label>Preparation time (minutes)</label><input type="number" step="1" data-field="preparation_time" value="${data.preparation_time ?? ''}" /></div>
+          <div class="field">
+            <label>Sold by</label>
+            <select data-field="unit">
+              <option value="" ${!data.unit ? 'selected' : ''}>— Not applicable —</option>
+              <option value="bottle" ${data.unit === 'bottle' ? 'selected' : ''}>Bottle</option>
+              <option value="glass" ${data.unit === 'glass' ? 'selected' : ''}>Glass</option>
+            </select>
+            <p class="field-hint">Mainly for wine/drinks. Shown as a small tag next to the price — guests see it in their own language automatically, no translation needed here.</p>
+          </div>
         </div>
+        <div class="field"><label>Preparation time (minutes)</label><input type="number" step="1" data-field="preparation_time" value="${data.preparation_time ?? ''}" /></div>
         <div class="field">
           <label>Photo</label>
           <div class="image-upload">
@@ -353,6 +363,7 @@
       const payload = collectTranslatable(backdrop, true);
       payload.category_id = Number(backdrop.querySelector('[data-field="category_id"]').value);
       payload.price = numOrNull(backdrop.querySelector('[data-field="price"]').value);
+      payload.unit = backdrop.querySelector('[data-field="unit"]').value || null;
       payload.preparation_time = numOrNull(backdrop.querySelector('[data-field="preparation_time"]').value);
       payload.image = backdrop.querySelector('[data-field="image"]').value || null;
       BADGES.forEach(([key]) => { payload[key] = backdrop.querySelector(`[data-field="${key}"]`).checked; });
