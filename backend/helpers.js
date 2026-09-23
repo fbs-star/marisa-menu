@@ -116,8 +116,34 @@ function flattenTranslatable(body, fields) {
   return out;
 }
 
+// Like flattenTranslatable, but safe for a PUT/UPDATE where the caller may
+// only be changing an unrelated field (e.g. just toggling `published`) and
+// didn't send `name` / `description` / `price_note` at all. flattenTranslatable
+// alone would treat a missing key as "clear every language to empty string",
+// silently wiping out existing text — this instead falls back to each
+// language column already on `existing` when the caller's body omits that
+// whole group. Use this on every PUT route that also has a POST route using
+// flattenTranslatable directly (POST has no "existing" row to protect).
+function flattenTranslatableForUpdate(body, existing, fields) {
+  const out = {};
+  for (const [dbPrefix, bodyKey] of fields) {
+    if (body[bodyKey] !== undefined) {
+      Object.assign(out, flattenTranslatable(body, [[dbPrefix, bodyKey]]));
+    } else {
+      for (const lang of LANGS) {
+        const col = `${dbPrefix}_${lang}`;
+        if (col in existing) out[col] = existing[col];
+      }
+    }
+  }
+  return out;
+}
+
 function boolInt(v) {
   return v ? 1 : 0;
 }
 
-module.exports = { LANGS, MENU_GROUPS, normalizeMenuGroup, nestCategory, nestItem, nestPromotion, flattenTranslatable, boolInt, normalizeImage, imageUrl };
+module.exports = {
+  LANGS, MENU_GROUPS, normalizeMenuGroup, nestCategory, nestItem, nestPromotion,
+  flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, imageUrl,
+};
