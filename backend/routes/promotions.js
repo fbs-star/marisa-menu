@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestPromotion, flattenTranslatable, boolInt, normalizeImage, normalizeMenuGroup } = require('../helpers');
+const { nestPromotion, flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, normalizeMenuGroup } = require('../helpers');
 
 const router = express.Router();
 
@@ -49,7 +49,7 @@ router.put('/:id', requireAuth, async (req, res) => {
   const body = req.body || {};
   const existing = await db.get('SELECT * FROM promotions WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
-  const flat = flattenTranslatable(body, TRANSLATABLE_FIELDS);
+  const flat = flattenTranslatableForUpdate(body, existing, TRANSLATABLE_FIELDS);
 
   const values = {
     id: req.params.id,

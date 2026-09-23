@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestItem, flattenTranslatable, boolInt, normalizeImage } = require('../helpers');
+const { nestItem, flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage } = require('../helpers');
 
 const router = express.Router();
 
@@ -33,9 +33,11 @@ router.get('/:id', requireAuth, async (req, res) => {
   res.json(nestItem(row));
 });
 
-function buildBadgeValues(body) {
+function buildBadgeValues(body, existing) {
   const out = {};
-  for (const b of BADGE_FIELDS) out[b] = boolInt(body[b]);
+  for (const b of BADGE_FIELDS) {
+    out[b] = body[b] !== undefined ? boolInt(body[b]) : (existing ? existing[b] : 0);
+  }
   return out;
 }
 
@@ -87,8 +89,8 @@ router.put('/:id', requireAuth, async (req, res) => {
   const body = req.body || {};
   const existing = await db.get('SELECT * FROM items WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
-  const flatNames = flattenTranslatable(body, TRANSLATABLE_FIELDS);
-  const priceNotes = flattenTranslatable(body, PRICE_NOTE_FIELDS);
+  const flatNames = flattenTranslatableForUpdate(body, existing, TRANSLATABLE_FIELDS);
+  const priceNotes = flattenTranslatableForUpdate(body, existing, PRICE_NOTE_FIELDS);
 
   const values = {
     id: req.params.id,
@@ -100,7 +102,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     unit: body.unit !== undefined ? normalizeUnit(body.unit) : existing.unit,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
     food_color_code: body.food_color_code ?? existing.food_color_code,
-    ...buildBadgeValues(body),
+    ...buildBadgeValues(body, existing),
     preparation_time: body.preparation_time ?? existing.preparation_time,
     stock: body.stock ?? existing.stock,
     published: body.published === undefined ? existing.published : boolInt(body.published),

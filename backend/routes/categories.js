@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestCategory, flattenTranslatable, boolInt, normalizeImage, normalizeMenuGroup } = require('../helpers');
+const { nestCategory, flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, normalizeMenuGroup } = require('../helpers');
 
 const router = express.Router();
 
@@ -51,15 +51,15 @@ router.put('/:id', requireAuth, async (req, res) => {
   const body = req.body || {};
   const existing = await db.get('SELECT * FROM categories WHERE id = ?', [req.params.id]);
   if (!existing) return res.status(404).json({ error: 'Not found' });
-  const flat = flattenTranslatable(body, TRANSLATABLE_FIELDS);
+  const flat = flattenTranslatableForUpdate(body, existing, TRANSLATABLE_FIELDS);
 
   const values = {
     id: req.params.id,
     ...flat,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
     menu_group: body.menu_group !== undefined ? normalizeMenuGroup(body.menu_group) : existing.menu_group,
-    is_new: boolInt(body.is_new),
-    is_signature: boolInt(body.is_signature),
+    is_new: body.is_new !== undefined ? boolInt(body.is_new) : existing.is_new,
+    is_signature: body.is_signature !== undefined ? boolInt(body.is_signature) : existing.is_signature,
     published: body.published === undefined ? existing.published : boolInt(body.published),
     sort_order: body.sort_order ?? existing.sort_order,
   };
