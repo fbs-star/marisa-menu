@@ -419,8 +419,12 @@ body[data-lang="th"] .promo-banner-title, body[data-lang="zh"] .promo-banner-tit
 body[data-lang="th"] .promo-card-title, body[data-lang="zh"] .promo-card-title, [dir="rtl"] .promo-card-title { font-family: inherit; }
 .promo-card-subtitle { font-size: 13px; color: var(--color-gold); margin-top: 2px; font-weight: 600; }
 
-.promo-modal { max-width: 560px; }
-.promo-modal-image { width: 100%; display: block; }
+/* Promotion detail popup: sized to read as a large, full page (about an A4 sheet)
+   rather than a small thumbnail card, while the image itself keeps using its own
+   natural aspect ratio (width:100%, height:auto) so it's never cropped or
+   letterboxed — the popup's box simply follows whatever shape the image is. */
+.promo-modal { max-width: min(94vw, 1040px); width: 94vw; max-height: 94vh; }
+.promo-modal-image { width: 100%; height: auto; display: block; }
 .promo-modal-image.placeholder { aspect-ratio: 4/3; background: var(--color-primary); }
 
 @media (max-width: 900px) {
