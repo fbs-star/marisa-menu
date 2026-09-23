@@ -264,6 +264,10 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .item-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .item-price { font-weight: 700; font-size: 16px; color: var(--color-ink); }
+.item-unit-badge {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; border: 1px solid var(--color-border); color: var(--color-ink-soft);
+}
 .item-price .currency { font-size: 11px; font-weight: 600; margin-inline-start: 3px; color: var(--color-ink-soft); }
 
 .sold-out-tag {

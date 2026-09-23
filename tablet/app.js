@@ -22,6 +22,19 @@
 
   const FOOD_ICONS = ['🍽️', '🥗', '🌶️', '🍜', '🥩', '🍹', '🍰', '☕', '🍺', '🍹'];
 
+  // Labels for item.unit ('bottle' | 'glass' | null), set from a plain
+  // dropdown in the admin panel (see admin/app.js "Sold by" field). Kept as
+  // a code rather than per-language text on each item so guests always see
+  // it localized, with no translation work needed in the admin UI.
+  const UNIT_LABELS = {
+    bottle: { en: 'Bottle', th: 'ขวด', ru: 'Бутылка', zh: '瓶', ar: 'زجاجة' },
+    glass: { en: 'Glass', th: 'แก้ว', ru: 'Бокал', zh: '杯', ar: 'كأس' },
+  };
+  function unitLabel(item) {
+    const l = item && item.unit && UNIT_LABELS[item.unit];
+    return l ? (l[state.lang] || l.en) : '';
+  }
+
   let state = {
     lang: localStorage.getItem('menu_lang') || 'en',
     menu: null,
@@ -253,6 +266,7 @@
           ${fmt(item.description) ? `<div class="item-desc">${escapeHtml(fmt(item.description))}</div>` : ''}
           <div class="item-footer">
             ${renderPrice(item)}
+            ${unitLabel(item) ? `<span class="item-unit-badge">${escapeHtml(unitLabel(item))}</span>` : ''}
           </div>
         </div>
       </div>
@@ -292,6 +306,7 @@
           ${item.sold_out ? `<div class="sold-out-tag" style="position:static;display:inline-block;">${escapeHtml(t('soldOut'))}</div>` : ''}
           <div class="modal-price-row">
             ${renderPrice(item)}
+            ${unitLabel(item) ? `<span class="item-unit-badge">${escapeHtml(unitLabel(item))}</span>` : ''}
           </div>
           ${fmt(item.price_note) ? `<div class="price-note">${escapeHtml(fmt(item.price_note))}</div>` : ''}
           <div class="meta-row">
