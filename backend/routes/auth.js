@@ -34,6 +34,20 @@ router.get('/me', requireAuth, async (req, res) => {
   res.json({ user });
 });
 
+// Reset the logged-in admin's own password without knowing the current one.
+// Requires an active, valid session (same requireAuth trust boundary as every
+// other /api/admin/* action) — meant for "I'm signed in but forgot my
+// password" recovery, since /change-password above needs the old password.
+router.post('/reset-password', requireAuth, async (req, res) => {
+  const { new_password } = req.body || {};
+  if (!new_password || new_password.length < 6) {
+    return res.status(400).json({ error: 'A new password (min 6 chars) is required' });
+  }
+  const hash = bcrypt.hashSync(new_password, 10);
+  await db.run('UPDATE admin_users SET password_hash = ? WHERE id = ?', [hash, req.user.id]);
+  res.json({ ok: true });
+});
+
 router.post('/change-password', requireAuth, async (req, res) => {
   const { current_password, new_password } = req.body || {};
   if (!current_password || !new_password || new_password.length < 6) {
