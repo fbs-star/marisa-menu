@@ -26,6 +26,21 @@
     return MENU_GROUPS.map((g) => `<option value="${g.value}" ${g.value === selected ? 'selected' : ''}>${g.label}</option>`).join('');
   }
 
+  // The 3 filter tabs guests see on the standalone "Promotion" tab/page —
+  // separate from MENU_GROUPS above (which is which menu PAGE the banner
+  // strip shows on). Promotions-only.
+  const PROMO_CATEGORIES = [
+    { value: 'food', label: 'Food', pillLabel: 'Food', pillClass: 'pill-on' },
+    { value: 'drink', label: 'Drinks', pillLabel: 'Drinks', pillClass: 'pill-off' },
+    { value: 'theme_night', label: 'Theme Night', pillLabel: 'Theme Night', pillClass: 'pill-wine' },
+  ];
+  function promoCategoryInfo(v) {
+    return PROMO_CATEGORIES.find((g) => g.value === v) || PROMO_CATEGORIES[0];
+  }
+  function promoCategoryOptionsHtml(selected) {
+    return PROMO_CATEGORIES.map((g) => `<option value="${g.value}" ${g.value === selected ? 'selected' : ''}>${g.label}</option>`).join('');
+  }
+
   let state = { user: null, page: 'categories', categories: [], items: [], promotions: [], settings: {}, activeCategoryId: null };
 
   const app = document.getElementById('app');
@@ -387,18 +402,19 @@
     const main = document.getElementById('main');
     main.innerHTML = `
       <div class="page-header">
-        <div><h1>Promotions</h1><p>Banner-style promotions shown on the Food, Drinks, or Wine menu page (pick which one below), and on the "Promotion" tab from the home screen.</p></div>
+        <div><h1>Promotions</h1><p>Banner-style promotions shown on the Food, Drinks, or Wine menu page, and on the "Promotion" tab from the home screen — which splits into Food / Drinks / Theme Night tabs (set per promotion when you edit it).</p></div>
         <button class="btn btn-primary" id="add-promo-btn">+ New Promotion</button>
       </div>
       <div class="card">
         <table>
-          <thead><tr><th>Banner</th><th>Title (EN)</th><th>Group</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Banner</th><th>Title (EN)</th><th>Group</th><th>Promotion Tab</th><th>Status</th><th></th></tr></thead>
           <tbody>
             ${state.promotions.map((p, idx) => `
               <tr>
                 <td><div class="promo-thumb" style="${p.image ? `background-image:url('${p.image}')` : ''}">${p.image ? '' : '🎉'}</div></td>
                 <td>${escapeHtml(p.title.en)}</td>
                 <td><span class="pill ${menuGroupInfo(p.menu_group).pillClass}">${menuGroupInfo(p.menu_group).pillLabel}</span></td>
+                <td><span class="pill ${promoCategoryInfo(p.promo_category).pillClass}">${promoCategoryInfo(p.promo_category).pillLabel}</span></td>
                 <td><span class="pill ${p.published ? 'pill-on' : 'pill-off'}">${p.published ? 'Published' : 'Hidden'}</span></td>
                 <td>
                   <button class="icon-btn" data-move-up="${p.id}" ${idx === 0 ? 'disabled' : ''}>↑</button>
@@ -408,7 +424,7 @@
                   <button class="icon-btn" data-del-promo="${p.id}">Delete</button>
                 </td>
               </tr>
-            `).join('') || `<tr><td colspan="5" class="empty-hint">No promotions yet.</td></tr>`}
+            `).join('') || `<tr><td colspan="6" class="empty-hint">No promotions yet.</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -439,7 +455,7 @@
 
   function openPromotionModal(promo) {
     const isNew = !promo;
-    const data = promo || { title: {}, subtitle: {}, image: null, detail_image: null, menu_group: 'food' };
+    const data = promo || { title: {}, subtitle: {}, image: null, detail_image: null, menu_group: 'food', promo_category: 'food' };
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     backdrop.innerHTML = `
@@ -448,6 +464,11 @@
         <div class="field">
           <label>Show on</label>
           <select data-field="menu_group">${menuGroupOptionsHtml(data.menu_group || 'food')}</select>
+        </div>
+        <div class="field">
+          <label>Promotion tab</label>
+          <p class="field-hint">Which of the 3 tabs (Food / Drinks / Theme Night) this shows under on the guest "Promotion" page.</p>
+          <select data-field="promo_category">${promoCategoryOptionsHtml(data.promo_category || 'food')}</select>
         </div>
         <div class="field">
           <label>Banner image</label>
@@ -536,6 +557,7 @@
         image: backdrop.querySelector('[data-field="image"]').value || null,
         detail_image: backdrop.querySelector('[data-field="detail_image"]').value || null,
         menu_group: backdrop.querySelector('[data-field="menu_group"]').value,
+        promo_category: backdrop.querySelector('[data-field="promo_category"]').value,
       };
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
