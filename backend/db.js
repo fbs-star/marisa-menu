@@ -276,6 +276,7 @@ function initDb() {
         home_background_image: '',
         tagline: '',
         logo_text: '',
+        logo_image: '',
       };
       for (const [k, v] of Object.entries(defaultSettings)) {
         await run('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', [k, v]);
