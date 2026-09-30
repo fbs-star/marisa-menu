@@ -3,11 +3,11 @@
   const RTL_LANGS = new Set(['ar']);
 
   const UI_STRINGS = {
-    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.' },
-    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้' },
-    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.' },
-    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。' },
-    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.' },
+    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.', promoTabFood: 'Food', promoTabDrink: 'Drinks', promoTabThemeNight: 'Theme Night' },
+    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้', promoTabFood: 'อาหาร', promoTabDrink: 'เครื่องดื่ม', promoTabThemeNight: 'ธีมค่ำคืน' },
+    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.', promoTabFood: 'Еда', promoTabDrink: 'Напитки', promoTabThemeNight: 'Тематический вечер' },
+    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。', promoTabFood: '餐食', promoTabDrink: '饮品', promoTabThemeNight: '主题之夜' },
+    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.', promoTabFood: 'طعام', promoTabDrink: 'مشروبات', promoTabThemeNight: 'ليلة موضوعية' },
   };
 
   const BADGE_LABELS = {
@@ -40,8 +40,14 @@
     menu: null,
     view: 'home', // 'home' | 'menu' | 'promotions'
     menuGroup: 'food', // 'food' | 'drink' | 'wine', only used when view === 'menu'
+    promoCategory: 'food', // 'food' | 'drink' | 'theme_night', only used when view === 'promotions'
     activeCategoryId: null,
   };
+
+  const PROMO_CATEGORIES = ['food', 'drink', 'theme_night'];
+  function promoCategoryLabel(cat) {
+    return t({ food: 'promoTabFood', drink: 'promoTabDrink', theme_night: 'promoTabThemeNight' }[cat]);
+  }
 
   // Auto-advance timer for the inline promo banner strip (see setupPromoBannerAutoScroll).
   // Cleared at the top of every render() so a stale timer never outlives the DOM it scrolls.
@@ -355,7 +361,9 @@
   // ---------------- Promotions ----------------
   function renderPromotions() {
     const app = document.getElementById('app');
-    const promotions = state.menu.promotions || [];
+    const allPromotions = state.menu.promotions || [];
+    if (!PROMO_CATEGORIES.includes(state.promoCategory)) state.promoCategory = 'food';
+    const promotions = allPromotions.filter((p) => (p.promo_category || 'food') === state.promoCategory);
     app.innerHTML = `
       <div class="header">
         <button class="back-btn" id="back-home" aria-label="${escapeHtml(t('back'))}">←</button>
@@ -366,6 +374,11 @@
         ${renderLangSwitcher()}
       </div>
       <div class="content promo-content">
+        <nav class="promo-tabs" id="promo-tabs">
+          ${PROMO_CATEGORIES.map((cat) => `
+            <button class="promo-tab ${cat === state.promoCategory ? 'active' : ''}" data-promo-cat="${cat}">${escapeHtml(promoCategoryLabel(cat))}</button>
+          `).join('')}
+        </nav>
         ${promotions.length ? `
           <div class="promo-feed" id="promo-feed">
             ${promotions.map(renderPromoCard).join('')}
@@ -375,6 +388,12 @@
     `;
     bindLangSwitcher(app);
     document.getElementById('back-home').addEventListener('click', () => { state.view = 'home'; render(); });
+    document.getElementById('promo-tabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.promo-tab');
+      if (!btn) return;
+      state.promoCategory = btn.dataset.promoCat;
+      render();
+    });
     document.getElementById('promo-feed')?.addEventListener('click', (e) => {
       const card = e.target.closest('.promo-card');
       if (!card) return;
