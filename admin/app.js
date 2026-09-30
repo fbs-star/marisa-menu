@@ -579,6 +579,7 @@
     const main = document.getElementById('main');
     const s = state.settings;
     const bg = s.home_background_image;
+    const logoImage = s.logo_image;
     main.innerHTML = `
       <div class="page-header">
         <div><h1>Home Screen</h1><p>What guests see on the welcome screen, before they pick Food Menu / Drinks Menu / Wine Menu / Promotion.</p></div>
@@ -589,7 +590,18 @@
           <input id="f-restaurant_name" value="${escapeAttr(s.restaurant_name || '')}" placeholder="Marisa Restaurant" />
         </div>
         <div class="field">
+          <label>Logo image</label>
+          <p class="field-hint">If set, this image replaces the restaurant name everywhere it's shown to guests (home screen and page headers). Use a version with a transparent background. Leave empty to show text instead.</p>
+          <div class="image-upload">
+            <div class="image-preview home-bg-preview" id="logo-preview" style="${logoImage ? `background-image:url('${logoImage}')` : ''}">${logoImage ? '' : '🏷️'}</div>
+            <input type="file" accept="image/*" id="logo-input" />
+          </div>
+          <input type="hidden" id="logo-value" value="${escapeAttr(logoImage || '')}" />
+          ${logoImage ? '<button type="button" class="icon-btn" id="logo-clear-btn">Remove logo image</button>' : ''}
+        </div>
+        <div class="field">
           <label>Wordmark on hero (large logo text)</label>
+          <p class="field-hint">Used as a fallback whenever no logo image is set above.</p>
           <input id="f-logo_text" value="${escapeAttr(s.logo_text || '')}" placeholder="Defaults to restaurant name if left blank" />
         </div>
         <div class="field">
@@ -620,6 +632,33 @@
     `;
     let uploading = false;
     const saveBtn = main.querySelector('#save-home-btn');
+    main.querySelector('#logo-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append('image', file);
+      uploading = true;
+      saveBtn.disabled = true;
+      const preview = main.querySelector('#logo-preview');
+      preview.textContent = 'Uploading…';
+      try {
+        const res = await api('/admin/upload', { method: 'POST', body: fd });
+        main.querySelector('#logo-value').value = res.url;
+        preview.style.backgroundImage = `url('${res.url}')`;
+        preview.textContent = '';
+      } catch (err) {
+        alert('Image upload failed: ' + err.message);
+      } finally {
+        uploading = false;
+        saveBtn.disabled = false;
+      }
+    });
+    main.querySelector('#logo-clear-btn')?.addEventListener('click', () => {
+      main.querySelector('#logo-value').value = '';
+      const preview = main.querySelector('#logo-preview');
+      preview.style.backgroundImage = '';
+      preview.textContent = '🏷️';
+    });
     main.querySelector('#bg-input').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -650,6 +689,7 @@
           body: JSON.stringify({
             restaurant_name: main.querySelector('#f-restaurant_name').value || '',
             logo_text: main.querySelector('#f-logo_text').value || '',
+            logo_image: main.querySelector('#logo-value').value || '',
             hotel_name: main.querySelector('#f-hotel_name').value || '',
             tagline: main.querySelector('#f-tagline').value || '',
             currency: main.querySelector('#f-currency').value || '',
