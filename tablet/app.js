@@ -71,6 +71,20 @@
     return obj[state.lang] || obj.en || '';
   }
 
+  // Renders the restaurant's name/wordmark: an uploaded logo image when the
+  // admin has set one (see admin Home Screen settings > "Logo image"),
+  // otherwise falls back to the existing text (logo_text / restaurant_name).
+  // `imgClass` sizes it differently for the home hero vs. the small page header.
+  function renderBrandName(imgClass) {
+    const logo = state.menu.logo_image;
+    if (logo) {
+      const name = escapeHtml(state.menu.logo_text || state.menu.restaurant_name || 'Menu');
+      return `<img class="${imgClass}" src="${logo}" alt="${name}" />`;
+    }
+    const textClass = imgClass === 'home-logo-img' ? 'home-name' : 'brand-name';
+    return `<div class="${textClass}">${escapeHtml(state.menu.logo_text || state.menu.restaurant_name || 'Menu')}</div>`;
+  }
+
   async function fetchMenu() {
     const res = await fetch('/api/public/menu');
     if (!res.ok) throw new Error('Failed to load menu');
@@ -130,7 +144,7 @@
         <div class="home-overlay">
           <div class="home-brand">
             <div class="home-hotel">${escapeHtml(state.menu.hotel_name || '')}</div>
-            <div class="home-name">${escapeHtml(state.menu.logo_text || state.menu.restaurant_name || 'Menu')}</div>
+            ${renderBrandName('home-logo-img')}
             ${state.menu.tagline ? `<div class="home-tagline">${escapeHtml(state.menu.tagline)}</div>` : ''}
           </div>
           <div class="home-buttons">
@@ -165,7 +179,7 @@
         <button class="back-btn" id="back-home" aria-label="${escapeHtml(t('back'))}">←</button>
         <div class="brand">
           <div class="brand-hotel">${escapeHtml(state.menu.hotel_name || '')}</div>
-          <div class="brand-name">${escapeHtml(state.menu.restaurant_name || 'Menu')}</div>
+          ${renderBrandName('brand-logo-img')}
         </div>
         ${renderLangSwitcher()}
       </div>
@@ -369,7 +383,7 @@
         <button class="back-btn" id="back-home" aria-label="${escapeHtml(t('back'))}">←</button>
         <div class="brand">
           <div class="brand-hotel">${escapeHtml(state.menu.hotel_name || '')}</div>
-          <div class="brand-name">${escapeHtml(state.menu.restaurant_name || 'Menu')}</div>
+          ${renderBrandName('brand-logo-img')}
         </div>
         ${renderLangSwitcher()}
       </div>

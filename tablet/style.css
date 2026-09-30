@@ -140,6 +140,8 @@ body[dir="rtl"] { direction: rtl; }
 .brand-hotel { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.75; }
 .brand-name { font-family: var(--font-display); font-size: 28px; font-weight: 700; letter-spacing: 0.01em; }
 [dir="rtl"] .brand-name, body[data-lang="th"] .brand-name, body[data-lang="zh"] .brand-name { font-family: inherit; }
+/* Uploaded logo image shown instead of .brand-name in the page header. */
+.brand-logo-img { height: 34px; width: auto; max-width: 220px; object-fit: contain; }
 
 .lang-switcher { display: flex; gap: 8px; flex-wrap: wrap; }
 .lang-btn {
@@ -375,6 +377,17 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
   text-shadow: 0 2px 18px rgba(0,0,0,0.4);
 }
 body[data-lang="th"] .home-name, body[data-lang="zh"] .home-name, [dir="rtl"] .home-name { font-family: inherit; }
+/* Uploaded logo image shown instead of .home-name (see admin Home Screen
+   settings > "Logo image"). Sized by height so its own aspect ratio decides
+   the width; drop-shadow keeps it readable over a busy background photo. */
+.home-logo-img {
+  height: 84px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 18px rgba(0,0,0,0.4));
+  margin: 0 auto;
+}
 .home-tagline {
   font-size: 15px;
   color: var(--color-gold);
@@ -544,8 +557,10 @@ body[data-lang="th"] .promo-card-title, body[data-lang="zh"] .promo-card-title, 
   .category-rail { width: 200px; }
   .header { padding: 14px 18px; }
   .brand-name { font-size: 22px; }
+  .brand-logo-img { height: 26px; }
   .content { padding: 18px 16px 50px; }
   .home-name { font-size: 32px; }
+  .home-logo-img { height: 60px; }
   /* Trim the grid's minimum column width alongside the narrower rail/padding
      above, so 2 item columns keep fitting through this tier instead of only
      just barely, or not, depending on a few px either way. */
