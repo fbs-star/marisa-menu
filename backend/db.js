@@ -231,6 +231,17 @@ function initDb() {
         await exec('ALTER TABLE promotions ADD COLUMN detail_image TEXT');
       }
 
+      // Migration: add promotions.promo_category ('food' | 'drink' | 'theme_night').
+      // This is a separate concept from menu_group above: menu_group controls
+      // which guest-facing menu PAGE (Food/Drinks/Wine) shows this promo as a
+      // banner strip; promo_category controls which of the 3 filter tabs on the
+      // standalone "Promotion" tab/page this promo shows up under. Defaults to
+      // 'food' for existing rows — restaurant staff assign the real tab from the
+      // admin panel's Promotion edit form.
+      if (!promoColNames.includes('promo_category')) {
+        await exec("ALTER TABLE promotions ADD COLUMN promo_category TEXT NOT NULL DEFAULT 'food'");
+      }
+
       // Migration: add items.unit — a structured "sold by the bottle / by the
       // glass" selector (values: 'bottle' | 'glass' | NULL) used mainly for
       // wine list entries. Stored as a plain code rather than translated text

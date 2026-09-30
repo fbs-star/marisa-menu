@@ -8,6 +8,15 @@ function normalizeMenuGroup(value) {
   return MENU_GROUPS.includes(value) ? value : 'food';
 }
 
+// The 3 filter tabs shown on the guest-facing standalone "Promotion" page
+// (separate from MENU_GROUPS above, which instead controls which menu PAGE a
+// promo's banner strip appears on).
+const PROMO_CATEGORIES = ['food', 'drink', 'theme_night'];
+
+function normalizePromoCategory(value) {
+  return PROMO_CATEGORIES.includes(value) ? value : 'food';
+}
+
 // New uploads go to Cloudinary and the `image` column stores the full
 // https:// URL Cloudinary returns. Older rows (from before this migration)
 // may still hold a bare local filename like "abc123.jpg" from the old
@@ -60,6 +69,7 @@ function nestPromotion(row) {
     // themselves at the point of use.
     detail_image: imageUrl(row.detail_image),
     menu_group: normalizeMenuGroup(row.menu_group),
+    promo_category: normalizePromoCategory(row.promo_category),
     published: !!row.published,
     sort_order: row.sort_order,
   };
@@ -144,6 +154,7 @@ function boolInt(v) {
 }
 
 module.exports = {
-  LANGS, MENU_GROUPS, normalizeMenuGroup, nestCategory, nestItem, nestPromotion,
+  LANGS, MENU_GROUPS, normalizeMenuGroup, PROMO_CATEGORIES, normalizePromoCategory,
+  nestCategory, nestItem, nestPromotion,
   flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, imageUrl,
 };
