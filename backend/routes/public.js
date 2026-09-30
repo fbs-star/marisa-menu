@@ -21,7 +21,7 @@ router.get('/menu', async (req, res) => {
     items: itemsByCategory[c.id] || [],
   })).filter((c) => c.items.length > 0); // hide empty categories on the guest-facing app
 
-  const [restaurantName, hotelName, currency, languagesRaw, homeBg, tagline, logoText] = await Promise.all([
+  const [restaurantName, hotelName, currency, languagesRaw, homeBg, tagline, logoText, logoImage] = await Promise.all([
     getSetting('restaurant_name'),
     getSetting('hotel_name'),
     getSetting('currency'),
@@ -29,6 +29,7 @@ router.get('/menu', async (req, res) => {
     getSetting('home_background_image'),
     getSetting('tagline'),
     getSetting('logo_text'),
+    getSetting('logo_image'),
   ]);
 
   res.json({
@@ -39,6 +40,10 @@ router.get('/menu', async (req, res) => {
     home_background_image: imageUrl(homeBg),
     tagline: tagline || '',
     logo_text: logoText || '',
+    // Uploaded logo wordmark image (see admin Home Screen settings). When set,
+    // the tablet app shows this image in place of the restaurant-name text —
+    // see renderHome()/header brand blocks in tablet/app.js.
+    logo_image: imageUrl(logoImage) || '',
     categories: tree,
     promotions: promotions.map(nestPromotion),
   });
