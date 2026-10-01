@@ -22,41 +22,92 @@
 
   // Factual dietary/allergen flags (item.dietary — see backend/helpers.js
   // nestItem()), distinct from the marketing BADGE_LABELS above. Rendered as
-  // small line icons next to the item name (renderDietaryIcons) plus a
-  // bottom legend explaining each one (renderDietaryLegend). Order matches
-  // the legend row on the restaurant's printed menu (Spicy, Gluten-Free,
-  // Vegan, Contains Pork, Contains Shell); icons are simplified line-art in
-  // the same stroke/currentColor style as the allergy-notice icon, not a
-  // pixel copy of the printed artwork.
+  // small icons next to the item name (renderDietaryIcons) plus a bottom
+  // legend explaining each one (renderDietaryLegend). Order and icon style
+  // match the owner's reference artwork (filled gold glyphs: crossed chilies
+  // for Spicy, a slashed wheat stalk in a circle for Gluten-Free, a sprout
+  // for Vegan, a pig face for Contains Pork, a shrimp for Contains Shell) —
+  // redrawn as vector icons rather than a pixel copy of the reference image,
+  // so they stay crisp at any size. Three of them (Gluten-Free, Contains
+  // Pork, Contains Shell) punch a few true-transparent holes (eyes, nostrils,
+  // the wheat+slash, a thin antenna line) via an SVG <mask>, which — unlike a
+  // hardcoded white shape — lets whatever is actually behind the icon show
+  // through, so the same icon looks right on both the light item cards and
+  // the dark legend bar. Each mask needs a document-unique id (building the
+  // same icon twice with the same id would make browsers share one mask
+  // between them), so svg() below takes a per-render uid and a small counter
+  // hands out a fresh one on every call.
+  let dietaryIconUid = 0;
   const DIETARY_DEFS = [
     {
       key: 'is_spicy', label: 'dietSpicy', cls: 'dietary-spicy',
-      svg: '<path d="M9.5 4.2c1.3-1.1 2.9-1 3.6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'
-        + '<path d="M10.2 5.3c3.4.5 6 2.7 6.6 6c.7 3.7-1.6 7.6-5.3 8.6c-3 .8-5.9-.5-6.9-3c-.8-2 0-4 1.8-4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+      svg: () => {
+        const pepper = '<path fill="currentColor" d="M7.2 17.6c-.5 1.1.3 2.1 1.4 1.8c.7-.2 1.2-.8 1.6-1.4c2.1-3.5 4.6-6.7 7.4-9.6c.8-.8.2-2.1-.9-2c-.8.1-1.5.6-2.1 1.2c-2.6 2.9-4.9 6.1-6.7 9.6c-.2.3-.5.5-.7.4Z"/>'
+          + '<path fill="currentColor" d="M8.6 7.1c.5-1.1 1.7-1.7 2.8-1.3c-.1 1.1-.9 2-2 2.2Z"/>'
+          + '<path fill="currentColor" d="M7.9 7.9c-1.2.1-2.2-.6-2.5-1.7c1.1-.4 2.2 0 2.9.9Z"/>';
+        return `<g>${pepper}</g><g transform="scale(-1,1) translate(-24,0)">${pepper}</g>`;
+      },
     },
     {
       key: 'is_gluten_free', label: 'dietGlutenFree', cls: 'dietary-gluten-free',
-      svg: '<circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.4"/>'
-        + '<line x1="12" y1="6.5" x2="12" y2="17.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
-        + '<path d="M12 8.6l-2.1-1.6M12 8.6l2.1-1.6M12 11.6l-2.1-1.6M12 11.6l2.1-1.6M12 14.6l-2.1-1.6M12 14.6l2.1-1.6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>',
+      svg: (uid) => `
+        <defs><mask id="dmask-g${uid}"><rect width="24" height="24" fill="#fff"/>
+          <g fill="#000" stroke="#000" stroke-linejoin="round">
+            <path d="M12 7c.9.9 1.2 1.8.8 2.6c-.9-.2-1.5-.9-.8-2.6Z"/>
+            <path d="M12 7c-.9.9-1.2 1.8-.8 2.6c.9-.2 1.5-.9.8-2.6Z"/>
+            <path d="M9.6 9.6c1 0 2 .5 2.4 1.5c-.9.5-2 .3-2.4-1.5Z"/>
+            <path d="M14.4 9.6c-1 0-2 .5-2.4 1.5c.9.5 2 .3 2.4-1.5Z"/>
+            <path d="M9.2 12.2c1 0 2 .5 2.4 1.5c-.9.5-2 .3-2.4-1.5Z"/>
+            <path d="M14.8 12.2c-1 0-2 .5-2.4 1.5c.9.5 2 .3 2.4-1.5Z"/>
+            <line x1="12" y1="7" x2="12" y2="17" stroke-width="0.7"/>
+            <line x1="6.5" y1="6.5" x2="17.5" y2="17.5" stroke-width="1.7" stroke-linecap="round"/>
+          </g>
+        </mask></defs>
+        <circle cx="12" cy="12" r="9.5" fill="currentColor" mask="url(#dmask-g${uid})"/>
+      `,
     },
     {
       key: 'is_vegan', label: 'dietVegan', cls: 'dietary-vegan',
-      svg: '<path d="M12 19.5c-4-1-6.3-4.3-5.6-9.3c4.3.2 7.3 2.6 8 6.6c.3 1.7.2 2.7-2.4 2.7z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>'
-        + '<path d="M8 12c1.3 1.8 2.6 3.6 4 5.6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+      svg: () => '<path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M7.3 8c2.6 2.2 4.5 5.6 5 10.2"/>'
+        + '<path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M15 9.6c-1.3 2.4-2.2 5.2-2.5 8.4"/>'
+        + '<path fill="currentColor" d="M13.5 8.3c2.3 0 4.1 1.8 4.2 4c-2.2.4-4.2-.5-5-2.5c-.3-.8 0-1.5.8-1.5Z"/>',
     },
     {
       key: 'contains_pork', label: 'dietContainsPork', cls: 'dietary-pork',
-      svg: '<circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.4"/>'
-        + '<path d="M8 8.2c.6-1.1 1.8-1.5 2.6-.7M16 8.2c-.6-1.1-1.8-1.5-2.6-.7" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>'
-        + '<ellipse cx="12" cy="13.3" rx="3.3" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.2"/>'
-        + '<circle cx="10.7" cy="13.3" r="0.55" fill="currentColor"/><circle cx="13.3" cy="13.3" r="0.55" fill="currentColor"/>',
+      svg: (uid) => `
+        <defs><mask id="dmask-p${uid}"><rect width="24" height="24" fill="#fff"/>
+          <g fill="#000">
+            <circle cx="9.3" cy="11.3" r="0.9"/>
+            <circle cx="14.7" cy="11.3" r="0.9"/>
+            <ellipse cx="12" cy="15.2" rx="3.1" ry="2.2"/>
+          </g>
+        </mask></defs>
+        <path fill="currentColor" d="M5.3 6.8c-1.1-.5-2.3-.2-2.9.8c-.6.9-.2 2 .8 2.7c.9.6 2.1.6 3.1 0Z"/>
+        <path fill="currentColor" d="M18.7 6.8c1.1-.5 2.3-.2 2.9.8c.6.9.2 2-.8 2.7c-.9.6-2.1.6-3.1 0Z"/>
+        <path fill="currentColor" mask="url(#dmask-p${uid})" d="M12 4.3c4.1 0 7.3 3.2 7.3 7.1c0 4.1-3.3 7.5-7.3 7.5s-7.3-3.4-7.3-7.5c0-3.9 3.2-7.1 7.3-7.1Z"/>
+        <circle cx="11" cy="15.2" r="0.75" fill="currentColor"/>
+        <circle cx="13" cy="15.2" r="0.75" fill="currentColor"/>
+      `,
     },
     {
       key: 'contains_shellfish', label: 'dietContainsShellfish', cls: 'dietary-shellfish',
-      svg: '<path d="M6.2 16.2c-1.3-3.3.1-7.4 3.8-9.6c3.4-2 7.6-1.4 9.2 1.4c1.1 1.9.5 3.9-1.3 4.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
-        + '<path d="M9 8.4c-1 1.7-1.3 3.7-.8 5.7c.5 2 1.9 3.4 3.7 3.9" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>'
-        + '<circle cx="17.3" cy="8.2" r="0.6" fill="currentColor"/>',
+      svg: (uid) => `
+        <defs><mask id="dmask-s${uid}"><rect width="24" height="24" fill="#fff"/>
+          <g stroke="#000" fill="none" stroke-linecap="round">
+            <line x1="2" y1="6.6" x2="7.5" y2="8.3" stroke-width="0.7"/>
+            <path d="M9.5 8.3c.6.9.6 1.9 0 2.7" stroke-width="0.7"/>
+            <path d="M11.8 10.3c.6.9.6 1.9 0 2.7" stroke-width="0.7"/>
+            <path d="M14 12.6c.6.9.6 1.9 0 2.7" stroke-width="0.7"/>
+          </g>
+        </mask></defs>
+        <g mask="url(#dmask-s${uid})">
+          <circle cx="7.3" cy="8.6" r="2.1" fill="currentColor"/>
+          <path fill="currentColor" d="M7.8 9.6c2.3-.5 4.6.2 6.1 2c1.9 2.3 1.7 5.6-.4 7.6c-1.7 1.6-4.2 1.8-6.1.6c.4-1 1.3-1.6 2.4-1.6c-1.6-.6-2.7-2-2.9-3.7c-1 .5-2.2.2-2.9-.7c.7-.8 1.8-1.1 2.8-.7c-.7-1.1-.8-2.4-.3-3.6c-1 0-1.9-.6-2.3-1.6c1-.5 2.1-.3 2.9.5c-.1-.4 0-.8.2-1.1Z"/>
+          <path fill="currentColor" d="M14 17.3c1.3.2 2.3 1.2 2.5 2.5c-1.3.3-2.6-.3-3.2-1.5Z"/>
+          <path fill="currentColor" d="M15.2 15.3c1.3-.2 2.6.4 3.2 1.6c-1.1.8-2.6.6-3.5-.4Z"/>
+          <path fill="currentColor" d="M15.7 12.8c1.3-.5 2.8 0 3.6 1.1c-1 .9-2.5 1-3.6.1Z"/>
+        </g>
+      `,
     },
   ];
 
@@ -67,7 +118,7 @@
     const active = DIETARY_DEFS.filter((d) => dietary[d.key]);
     if (!active.length) return '';
     return `<span class="item-dietary">${active.map((d) => `
-      <span class="dietary-icon ${d.cls}" title="${escapeHtml(t(d.label))}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg}</svg></span>
+      <span class="dietary-icon ${d.cls}" title="${escapeHtml(t(d.label))}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg(++dietaryIconUid)}</svg></span>
     `).join('')}</span>`;
   }
 
@@ -81,7 +132,7 @@
         <div class="dietary-legend__items">
           ${DIETARY_DEFS.map((d) => `
             <div class="dietary-legend__item">
-              <span class="dietary-icon ${d.cls}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg}</svg></span>
+              <span class="dietary-icon ${d.cls}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg(++dietaryIconUid)}</svg></span>
               <span class="dietary-legend__label">${escapeHtml(t(d.label))}</span>
             </div>
           `).join('')}
