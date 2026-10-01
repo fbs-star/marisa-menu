@@ -3,11 +3,11 @@
   const RTL_LANGS = new Set(['ar']);
 
   const UI_STRINGS = {
-    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.', promoTabFood: 'Food', promoTabDrink: 'Drinks', promoTabThemeNight: 'Theme Night', allergyNotice: 'Please inform our service team before placing your order if a person in your party has a food allergy or has any dietary requirements.' },
-    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้', promoTabFood: 'อาหาร', promoTabDrink: 'เครื่องดื่ม', promoTabThemeNight: 'ธีมค่ำคืน', allergyNotice: 'กรุณาแจ้งพนักงานก่อนสั่งอาหาร หากท่านหรือผู้ร่วมโต๊ะมีอาการแพ้อาหารหรือข้อจำกัดด้านอาหาร' },
-    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.', promoTabFood: 'Еда', promoTabDrink: 'Напитки', promoTabThemeNight: 'Тематический вечер', allergyNotice: 'Пожалуйста, сообщите нашим сотрудникам перед заказом, если у кого-то из вашей компании есть пищевая аллергия или особые требования к питанию.' },
-    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。', promoTabFood: '餐食', promoTabDrink: '饮品', promoTabThemeNight: '主题之夜', allergyNotice: '如果您或同桌的客人对某些食物过敏或有饮食限制，请在点餐前告知我们的服务人员。' },
-    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.', promoTabFood: 'طعام', promoTabDrink: 'مشروبات', promoTabThemeNight: 'ليلة موضوعية', allergyNotice: 'يرجى إبلاغ فريق الخدمة لدينا قبل تقديم طلبكم إذا كان أحد أفراد مجموعتكم يعاني من حساسية تجاه الطعام أو لديه أي متطلبات غذائية خاصة.' },
+    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.', promoTabFood: 'Food', promoTabDrink: 'Drinks', promoTabThemeNight: 'Theme Night', allergyNotice: 'Please inform our service team before placing your order\nif a person in your party has a food allergy or any dietary requirements.' },
+    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้', promoTabFood: 'อาหาร', promoTabDrink: 'เครื่องดื่ม', promoTabThemeNight: 'ธีมค่ำคืน', allergyNotice: 'กรุณาแจ้งพนักงานก่อนสั่งอาหาร\nหากท่านหรือผู้ร่วมโต๊ะมีอาการแพ้อาหารหรือข้อจำกัดด้านอาหาร' },
+    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.', promoTabFood: 'Еда', promoTabDrink: 'Напитки', promoTabThemeNight: 'Тематический вечер', allergyNotice: 'Пожалуйста, сообщите нашим сотрудникам перед заказом,\nесли у кого-то из вашей компании есть пищевая аллергия или особые требования к питанию.' },
+    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。', promoTabFood: '餐食', promoTabDrink: '饮品', promoTabThemeNight: '主题之夜', allergyNotice: '如果您或同桌的客人对某些食物过敏或有饮食限制，\n请在点餐前告知我们的服务人员。' },
+    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.', promoTabFood: 'طعام', promoTabDrink: 'مشروبات', promoTabThemeNight: 'ليلة موضوعية', allergyNotice: 'يرجى إبلاغ فريق الخدمة لدينا قبل تقديم طلبكم\nإذا كان أحد أفراد مجموعتكم يعاني من حساسية تجاه الطعام أو لديه أي متطلبات غذائية خاصة.' },
   };
 
   const BADGE_LABELS = {
@@ -114,9 +114,39 @@
   // index.html — deliberately outside #app, so it survives every view's
   // full innerHTML replacement above). Called on every render(), including a
   // language switch, so its text always matches state.lang.
+  //
+  // Each language's allergyNotice string (see UI_STRINGS above) carries one
+  // embedded "\n" splitting it into two short clauses, rendered as two
+  // stacked lines (plus a small notice icon) instead of one long run-on
+  // line — built with DOM calls + textContent (not innerHTML) even though
+  // the source strings are static, so nothing here depends on string content
+  // ever being safe to parse as markup.
   function renderAllergyNotice() {
     const bar = document.getElementById('allergy-notice');
-    if (bar) bar.textContent = t('allergyNotice');
+    if (!bar) return;
+    const lines = t('allergyNotice').split('\n');
+    bar.innerHTML = '';
+
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'allergy-notice__icon');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML =
+      '<circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
+      '<line x1="12" y1="7.4" x2="12" y2="13.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<circle cx="12" cy="16.4" r="1.1" fill="currentColor"/>';
+
+    const textWrap = document.createElement('div');
+    textWrap.className = 'allergy-notice__text';
+    for (const line of lines) {
+      const span = document.createElement('span');
+      span.className = 'allergy-notice__line';
+      span.textContent = line;
+      textWrap.appendChild(span);
+    }
+
+    bar.appendChild(icon);
+    bar.appendChild(textWrap);
   }
 
   function renderLangSwitcher(active) {
