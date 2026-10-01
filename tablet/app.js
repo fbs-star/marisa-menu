@@ -3,11 +3,11 @@
   const RTL_LANGS = new Set(['ar']);
 
   const UI_STRINGS = {
-    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.', promoTabFood: 'Food', promoTabDrink: 'Drinks', promoTabThemeNight: 'Theme Night', allergyNotice: 'Please inform our service team before placing your order\nif a person in your party has a food allergy or any dietary requirements.' },
-    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้', promoTabFood: 'อาหาร', promoTabDrink: 'เครื่องดื่ม', promoTabThemeNight: 'ธีมค่ำคืน', allergyNotice: 'กรุณาแจ้งพนักงานก่อนสั่งอาหาร\nหากท่านหรือผู้ร่วมโต๊ะมีอาการแพ้อาหารหรือข้อจำกัดด้านอาหาร' },
-    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.', promoTabFood: 'Еда', promoTabDrink: 'Напитки', promoTabThemeNight: 'Тематический вечер', allergyNotice: 'Пожалуйста, сообщите нашим сотрудникам перед заказом,\nесли у кого-то из вашей компании есть пищевая аллергия или особые требования к питанию.' },
-    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。', promoTabFood: '餐食', promoTabDrink: '饮品', promoTabThemeNight: '主题之夜', allergyNotice: '如果您或同桌的客人对某些食物过敏或有饮食限制，\n请在点餐前告知我们的服务人员。' },
-    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.', promoTabFood: 'طعام', promoTabDrink: 'مشروبات', promoTabThemeNight: 'ليلة موضوعية', allergyNotice: 'يرجى إبلاغ فريق الخدمة لدينا قبل تقديم طلبكم\nإذا كان أحد أفراد مجموعتكم يعاني من حساسية تجاه الطعام أو لديه أي متطلبات غذائية خاصة.' },
+    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.', promoTabFood: 'Food', promoTabDrink: 'Drinks', promoTabThemeNight: 'Theme Night', allergyNotice: 'Please inform our service team before placing your order\nif a person in your party has a food allergy or any dietary requirements.', dietSpicy: 'Spicy', dietGlutenFree: 'Gluten-Free', dietVegan: 'Vegan', dietContainsPork: 'Contains Pork', dietContainsShellfish: 'Contains Shellfish', dietLegendTitle: 'Icon Guide' },
+    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้', promoTabFood: 'อาหาร', promoTabDrink: 'เครื่องดื่ม', promoTabThemeNight: 'ธีมค่ำคืน', allergyNotice: 'กรุณาแจ้งพนักงานก่อนสั่งอาหาร\nหากท่านหรือผู้ร่วมโต๊ะมีอาการแพ้อาหารหรือข้อจำกัดด้านอาหาร', dietSpicy: 'เผ็ด', dietGlutenFree: 'ปราศจากกลูเตน', dietVegan: 'วีแกน', dietContainsPork: 'มีส่วนผสมของหมู', dietContainsShellfish: 'มีส่วนผสมของกุ้ง/หอย', dietLegendTitle: 'คำอธิบายสัญลักษณ์' },
+    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.', promoTabFood: 'Еда', promoTabDrink: 'Напитки', promoTabThemeNight: 'Тематический вечер', allergyNotice: 'Пожалуйста, сообщите нашим сотрудникам перед заказом,\nесли у кого-то из вашей компании есть пищевая аллергия или особые требования к питанию.', dietSpicy: 'Острое', dietGlutenFree: 'Без глютена', dietVegan: 'Веганское', dietContainsPork: 'Содержит свинину', dietContainsShellfish: 'Содержит ракообразных/моллюсков', dietLegendTitle: 'Обозначения' },
+    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。', promoTabFood: '餐食', promoTabDrink: '饮品', promoTabThemeNight: '主题之夜', allergyNotice: '如果您或同桌的客人对某些食物过敏或有饮食限制，\n请在点餐前告知我们的服务人员。', dietSpicy: '辣', dietGlutenFree: '无麸质', dietVegan: '纯素', dietContainsPork: '含猪肉', dietContainsShellfish: '含贝类/虾蟹', dietLegendTitle: '图标说明' },
+    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.', promoTabFood: 'طعام', promoTabDrink: 'مشروبات', promoTabThemeNight: 'ليلة موضوعية', allergyNotice: 'يرجى إبلاغ فريق الخدمة لدينا قبل تقديم طلبكم\nإذا كان أحد أفراد مجموعتكم يعاني من حساسية تجاه الطعام أو لديه أي متطلبات غذائية خاصة.', dietSpicy: 'حار', dietGlutenFree: 'خالٍ من الغلوتين', dietVegan: 'نباتي بحت', dietContainsPork: 'يحتوي على لحم الخنزير', dietContainsShellfish: 'يحتوي على المحار/القشريات', dietLegendTitle: 'دليل الرموز' },
   };
 
   const BADGE_LABELS = {
@@ -19,6 +19,76 @@
     is_our_favorite: { en: 'Our Favorite', th: 'ร้านแนะนำ', ru: 'Наш любимый', zh: '店家最爱', ar: 'المفضل لدينا', cls: '' },
     is_healthy: { en: 'Healthy', th: 'เพื่อสุขภาพ', ru: 'Полезно', zh: '健康', ar: 'صحي', cls: 'badge-healthy' },
   };
+
+  // Factual dietary/allergen flags (item.dietary — see backend/helpers.js
+  // nestItem()), distinct from the marketing BADGE_LABELS above. Rendered as
+  // small line icons next to the item name (renderDietaryIcons) plus a
+  // bottom legend explaining each one (renderDietaryLegend). Order matches
+  // the legend row on the restaurant's printed menu (Spicy, Gluten-Free,
+  // Vegan, Contains Pork, Contains Shell); icons are simplified line-art in
+  // the same stroke/currentColor style as the allergy-notice icon, not a
+  // pixel copy of the printed artwork.
+  const DIETARY_DEFS = [
+    {
+      key: 'is_spicy', label: 'dietSpicy', cls: 'dietary-spicy',
+      svg: '<path d="M9.5 4.2c1.3-1.1 2.9-1 3.6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'
+        + '<path d="M10.2 5.3c3.4.5 6 2.7 6.6 6c.7 3.7-1.6 7.6-5.3 8.6c-3 .8-5.9-.5-6.9-3c-.8-2 0-4 1.8-4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    },
+    {
+      key: 'is_gluten_free', label: 'dietGlutenFree', cls: 'dietary-gluten-free',
+      svg: '<circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.4"/>'
+        + '<line x1="12" y1="6.5" x2="12" y2="17.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>'
+        + '<path d="M12 8.6l-2.1-1.6M12 8.6l2.1-1.6M12 11.6l-2.1-1.6M12 11.6l2.1-1.6M12 14.6l-2.1-1.6M12 14.6l2.1-1.6" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>',
+    },
+    {
+      key: 'is_vegan', label: 'dietVegan', cls: 'dietary-vegan',
+      svg: '<path d="M12 19.5c-4-1-6.3-4.3-5.6-9.3c4.3.2 7.3 2.6 8 6.6c.3 1.7.2 2.7-2.4 2.7z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>'
+        + '<path d="M8 12c1.3 1.8 2.6 3.6 4 5.6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>',
+    },
+    {
+      key: 'contains_pork', label: 'dietContainsPork', cls: 'dietary-pork',
+      svg: '<circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.4"/>'
+        + '<path d="M8 8.2c.6-1.1 1.8-1.5 2.6-.7M16 8.2c-.6-1.1-1.8-1.5-2.6-.7" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>'
+        + '<ellipse cx="12" cy="13.3" rx="3.3" ry="2.5" fill="none" stroke="currentColor" stroke-width="1.2"/>'
+        + '<circle cx="10.7" cy="13.3" r="0.55" fill="currentColor"/><circle cx="13.3" cy="13.3" r="0.55" fill="currentColor"/>',
+    },
+    {
+      key: 'contains_shellfish', label: 'dietContainsShellfish', cls: 'dietary-shellfish',
+      svg: '<path d="M6.2 16.2c-1.3-3.3.1-7.4 3.8-9.6c3.4-2 7.6-1.4 9.2 1.4c1.1 1.9.5 3.9-1.3 4.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '<path d="M9 8.4c-1 1.7-1.3 3.7-.8 5.7c.5 2 1.9 3.4 3.7 3.9" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>'
+        + '<circle cx="17.3" cy="8.2" r="0.6" fill="currentColor"/>',
+    },
+  ];
+
+  // Small icons next to an item's name on a card/modal — only the ones that
+  // apply to this item (an item with none of the 5 flags set renders nothing).
+  function renderDietaryIcons(dietary) {
+    if (!dietary) return '';
+    const active = DIETARY_DEFS.filter((d) => dietary[d.key]);
+    if (!active.length) return '';
+    return `<span class="item-dietary">${active.map((d) => `
+      <span class="dietary-icon ${d.cls}" title="${escapeHtml(t(d.label))}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg}</svg></span>
+    `).join('')}</span>`;
+  }
+
+  // Bottom legend explaining what each dietary icon means, in the guest's
+  // current language. Shown once per category (see renderCategoryContent),
+  // only when at least one item in that category actually carries a flag.
+  function renderDietaryLegend() {
+    return `
+      <div class="dietary-legend">
+        <div class="dietary-legend__title">${escapeHtml(t('dietLegendTitle'))}</div>
+        <div class="dietary-legend__items">
+          ${DIETARY_DEFS.map((d) => `
+            <div class="dietary-legend__item">
+              <span class="dietary-icon ${d.cls}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg}</svg></span>
+              <span class="dietary-legend__label">${escapeHtml(t(d.label))}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
 
   const FOOD_ICONS = ['🍽️', '🥗', '🌶️', '🍜', '🥩', '🍹', '🍰', '☕', '🍺', '🍹'];
 
@@ -301,6 +371,7 @@
 
   function renderCategoryContent(category) {
     if (!category) return `<div class="empty-state">${escapeHtml(t('empty'))}</div>`;
+    const hasDietary = category.items.some((i) => i.dietary && Object.values(i.dietary).some(Boolean));
     return `
       <div class="category-heading">
         <h2>${escapeHtml(fmt(category.name))}</h2>
@@ -309,6 +380,7 @@
       <div class="item-grid">
         ${category.items.map(renderItemCard).join('')}
       </div>
+      ${hasDietary ? renderDietaryLegend() : ''}
     `;
   }
 
@@ -322,7 +394,10 @@
         </div>
         <div class="item-body">
           ${renderBadges(item.badges)}
-          <div class="item-name">${escapeHtml(fmt(item.name))}</div>
+          <div class="item-name-row">
+            <div class="item-name">${escapeHtml(fmt(item.name))}</div>
+            ${renderDietaryIcons(item.dietary)}
+          </div>
           ${fmt(item.description) ? `<div class="item-desc">${escapeHtml(fmt(item.description))}</div>` : ''}
           <div class="item-footer">
             ${renderPrice(item)}
@@ -361,7 +436,10 @@
         </div>
         <div class="modal-body">
           ${renderBadges(item.badges)}
-          <div class="item-name">${escapeHtml(fmt(item.name))}</div>
+          <div class="item-name-row">
+            <div class="item-name">${escapeHtml(fmt(item.name))}</div>
+            ${renderDietaryIcons(item.dietary)}
+          </div>
           ${fmt(item.description) ? `<div class="item-desc">${escapeHtml(fmt(item.description))}</div>` : ''}
           ${item.sold_out ? `<div class="sold-out-tag" style="position:static;display:inline-block;">${escapeHtml(t('soldOut'))}</div>` : ''}
           <div class="modal-price-row">

@@ -285,6 +285,36 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
 }
 .item-price .currency { font-size: 11px; font-weight: 600; margin-inline-start: 3px; color: var(--color-ink-soft); }
 
+/* ---------- Dietary/allergen icons + legend ----------
+   Factual icons (see item.dietary — spicy/vegan/gluten-free/contains pork/
+   contains shellfish), separate from the text-pill .item-badges/.badge
+   above. Small icons sit next to the item name (renderDietaryIcons); a
+   legend explaining each one (renderDietaryLegend) appears once at the
+   bottom of any category that has at least one tagged item. */
+.item-name-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.item-dietary { display: inline-flex; align-items: center; gap: 4px; }
+.dietary-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 17px; height: 17px; flex: 0 0 auto; color: var(--color-gold);
+}
+.dietary-icon svg { width: 100%; height: 100%; }
+
+.dietary-legend {
+  margin-top: 22px;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+.dietary-legend__title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--color-ink-soft); margin-bottom: 10px;
+}
+.dietary-legend__items { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.dietary-legend__item { display: flex; align-items: center; gap: 7px; }
+.dietary-legend__item .dietary-icon { width: 19px; height: 19px; }
+.dietary-legend__label { font-size: 12.5px; font-weight: 600; color: var(--color-ink); }
+
 .sold-out-tag {
   position: absolute; top: 10px; inset-inline-end: 10px;
   background: var(--color-danger); color: #fff; font-size: 11px; font-weight: 700;
@@ -321,7 +351,9 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
   display: flex; align-items: center; justify-content: center;
 }
 .modal-body { padding: 22px 26px 28px; }
-.modal-body .item-name { font-size: 22px; margin-bottom: 8px; }
+.modal-body .item-name-row { margin-bottom: 8px; }
+.modal-body .item-name { font-size: 22px; margin-bottom: 0; }
+.modal-body .dietary-icon { width: 20px; height: 20px; }
 .modal-body .item-desc { -webkit-line-clamp: unset; font-size: 15px; margin-bottom: 14px; }
 .modal-price-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
 .modal-price-row .item-price { font-size: 22px; }
