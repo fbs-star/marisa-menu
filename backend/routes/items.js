@@ -16,6 +16,16 @@ const BADGE_FIELDS = [
   'is_best_seller', 'is_our_favorite', 'is_healthy', 'is_snooze',
 ];
 
+// The 5 dietary/allergen flags (see backend/db.js migration notes). Handled
+// with the same buildBadgeValues helper as BADGE_FIELDS above (same boolean
+// semantics, same "fall back to existing row on PUT" behavior), just kept as
+// a separate list/response key so the admin UI and tablet app can treat them
+// as a distinct, factual concept rather than mixing them into the marketing
+// badges object.
+const DIETARY_FIELDS = [
+  'is_spicy', 'is_vegan', 'is_gluten_free', 'contains_pork', 'contains_shellfish',
+];
+
 router.get('/', requireAuth, async (req, res) => {
   const { category_id } = req.query;
   let rows;
@@ -37,6 +47,14 @@ function buildBadgeValues(body, existing) {
   const out = {};
   for (const b of BADGE_FIELDS) {
     out[b] = body[b] !== undefined ? boolInt(body[b]) : (existing ? existing[b] : 0);
+  }
+  return out;
+}
+
+function buildDietaryValues(body, existing) {
+  const out = {};
+  for (const d of DIETARY_FIELDS) {
+    out[d] = body[d] !== undefined ? boolInt(body[d]) : (existing ? existing[d] : 0);
   }
   return out;
 }
@@ -64,6 +82,7 @@ router.post('/', requireAuth, async (req, res) => {
     image: normalizeImage(body.image),
     food_color_code: body.food_color_code ?? null,
     ...buildBadgeValues(body),
+    ...buildDietaryValues(body),
     preparation_time: body.preparation_time ?? null,
     stock: body.stock ?? null,
     published: body.published === undefined ? 1 : boolInt(body.published),
@@ -74,12 +93,14 @@ router.post('/', requireAuth, async (req, res) => {
       desc_en, desc_th, desc_ru, desc_zh, desc_ar, price, price_calorie,
       price_note_en, price_note_th, price_note_ru, price_note_zh, unit, image, food_color_code,
       is_new, is_signature, is_chefs_special, is_must_try, is_best_seller, is_our_favorite,
-      is_healthy, is_snooze, preparation_time, stock, published, sort_order)
+      is_healthy, is_snooze, is_spicy, is_vegan, is_gluten_free, contains_pork, contains_shellfish,
+      preparation_time, stock, published, sort_order)
     VALUES (@external_id, @category_id, @name_en, @name_th, @name_ru, @name_zh, @name_ar,
       @desc_en, @desc_th, @desc_ru, @desc_zh, @desc_ar, @price, @price_calorie,
       @price_note_en, @price_note_th, @price_note_ru, @price_note_zh, @unit, @image, @food_color_code,
       @is_new, @is_signature, @is_chefs_special, @is_must_try, @is_best_seller, @is_our_favorite,
-      @is_healthy, @is_snooze, @preparation_time, @stock, @published, @sort_order)
+      @is_healthy, @is_snooze, @is_spicy, @is_vegan, @is_gluten_free, @contains_pork, @contains_shellfish,
+      @preparation_time, @stock, @published, @sort_order)
   `, values);
   const row = await db.get('SELECT * FROM items WHERE id = ?', [info.lastInsertRowid]);
   res.status(201).json(nestItem(row));
@@ -103,6 +124,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
     food_color_code: body.food_color_code ?? existing.food_color_code,
     ...buildBadgeValues(body, existing),
+    ...buildDietaryValues(body, existing),
     preparation_time: body.preparation_time ?? existing.preparation_time,
     stock: body.stock ?? existing.stock,
     published: body.published === undefined ? existing.published : boolInt(body.published),
@@ -117,6 +139,8 @@ router.put('/:id', requireAuth, async (req, res) => {
       unit=@unit, image=@image, food_color_code=@food_color_code,
       is_new=@is_new, is_signature=@is_signature, is_chefs_special=@is_chefs_special, is_must_try=@is_must_try,
       is_best_seller=@is_best_seller, is_our_favorite=@is_our_favorite, is_healthy=@is_healthy, is_snooze=@is_snooze,
+      is_spicy=@is_spicy, is_vegan=@is_vegan, is_gluten_free=@is_gluten_free,
+      contains_pork=@contains_pork, contains_shellfish=@contains_shellfish,
       preparation_time=@preparation_time, stock=@stock, published=@published, sort_order=@sort_order,
       updated_at=CURRENT_TIMESTAMP
     WHERE id=@id
