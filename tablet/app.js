@@ -95,7 +95,7 @@
         <div class="dietary-legend__items">
           ${DIETARY_DEFS.map((d) => `
             <div class="dietary-legend__item">
-              <span class="dietary-icon ${d.cls}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg(++dietaryIconUid)}</svg></span>
+              <span class="dietary-icon ${d.cls}"><svg viewBox="${d.viewBox}" aria-hidden="true">${d.svg()}</svg></span>
               <span class="dietary-legend__label">${escapeHtml(t(d.label))}</span>
             </div>
           `).join('')}
