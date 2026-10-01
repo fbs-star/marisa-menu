@@ -23,6 +23,21 @@ function strOrEmpty(v) {
   return v === undefined || v === null ? '' : String(v).trim();
 }
 
+// Loose name key used ONLY as a last-resort match fallback (see below): trims,
+// lowercases, and collapses internal whitespace runs to a single space. This
+// exists because re-uploading an older copy of the source spreadsheet kept
+// creating brand-new duplicate rows (missing image/unit) whenever its name
+// differed from the current admin-panel name by nothing but casing or stray
+// double-spaces (e.g. "Massaman Beef " vs "Massaman Beef", "TAWANDANG ROSE
+// (490 ml.)" vs "Tawandang Rose (490 ml.)"). It deliberately does NOT do any
+// fuzzy/substring matching beyond that: two genuinely different names (e.g.
+// a combined "Chicken or Prawns" item vs a spreadsheet that still lists them
+// as two separate rows) must NOT be silently merged, so those still require
+// the spreadsheet itself to be reconciled with the current admin names.
+function looseNameKey(v) {
+  return strOrEmpty(v).toLowerCase().replace(/\s+/g, ' ');
+}
+
 // Categories that belong under the guest-facing "Drinks Menu" landing button.
 // Everything else defaults to "Food Menu". Matched case-insensitively against
 // the English category name so re-imports keep classifying the same way.
@@ -76,6 +91,18 @@ async function importWorkbook(buffer) {
         ? await tx.get("SELECT id FROM categories WHERE external_id = ? AND external_id != ''", [external_id])
         : null;
       if (!existing) existing = await tx.get('SELECT id FROM categories WHERE name_en = ?', [data.name_en]);
+      if (!existing) {
+        // Last-resort fallback: match ignoring case/whitespace differences
+        // only (see looseNameKey above) so a re-uploaded spreadsheet with
+        // slightly different formatting updates the existing category
+        // instead of creating a duplicate.
+        const key = looseNameKey(data.name_en);
+        if (key) {
+          const candidates = await tx.all('SELECT id, name_en FROM categories', []);
+          const match = candidates.find((c) => looseNameKey(c.name_en) === key);
+          if (match) existing = { id: match.id };
+        }
+      }
 
       if (existing) {
         await tx.run(`
@@ -133,6 +160,24 @@ async function importWorkbook(buffer) {
         ? await tx.get("SELECT id FROM items WHERE external_id = ? AND external_id != ''", [external_id])
         : null;
       if (!existing) existing = await tx.get('SELECT id FROM items WHERE name_en = ? AND category_id = ?', [name_en, category_id]);
+      if (!existing) {
+        // Last-resort fallback: match ignoring case/whitespace differences
+        // only (see looseNameKey above), scoped to the same category, so a
+        // re-uploaded spreadsheet with slightly different formatting (extra
+        // spaces, different casing) updates the existing item in place
+        // instead of inserting a new duplicate row with no image/unit. This
+        // intentionally does NOT attempt substring/fuzzy matching beyond
+        // that — a spreadsheet row whose name has actually changed (e.g. an
+        // item that was since renamed or split/merged in the admin panel)
+        // still needs the spreadsheet reconciled by hand rather than being
+        // silently merged into a possibly-wrong item.
+        const key = looseNameKey(name_en);
+        if (key) {
+          const candidates = await tx.all('SELECT id, name_en FROM items WHERE category_id = ?', [category_id]);
+          const match = candidates.find((c) => looseNameKey(c.name_en) === key);
+          if (match) existing = { id: match.id };
+        }
+      }
 
       if (existing) {
         await tx.run(`
