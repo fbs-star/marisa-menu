@@ -63,6 +63,11 @@ CREATE TABLE IF NOT EXISTS items (
   is_our_favorite INTEGER NOT NULL DEFAULT 0,
   is_healthy INTEGER NOT NULL DEFAULT 0,
   is_snooze INTEGER NOT NULL DEFAULT 0,
+  is_spicy INTEGER NOT NULL DEFAULT 0,
+  is_vegan INTEGER NOT NULL DEFAULT 0,
+  is_gluten_free INTEGER NOT NULL DEFAULT 0,
+  contains_pork INTEGER NOT NULL DEFAULT 0,
+  contains_shellfish INTEGER NOT NULL DEFAULT 0,
   preparation_time INTEGER,
   stock INTEGER,
   published INTEGER NOT NULL DEFAULT 1,
@@ -252,6 +257,20 @@ function initDb() {
       const itemColNames = itemCols.map((c) => c.name);
       if (!itemColNames.includes('unit')) {
         await exec('ALTER TABLE items ADD COLUMN unit TEXT');
+      }
+
+      // Migration: add the 5 guest-facing dietary/allergen badge columns
+      // (Spicy / Vegan / Gluten-Free / Contains Pork / Contains Shellfish),
+      // shown on the tablet app as small icons next to the item name plus a
+      // bottom legend bar. This is a separate concept from the marketing
+      // badges above (is_new/is_signature/...): those are restaurant-chosen
+      // promotional pills, these are factual dietary/allergen flags sourced
+      // from (and corrected against) the printed menu.
+      const dietaryCols = ['is_spicy', 'is_vegan', 'is_gluten_free', 'contains_pork', 'contains_shellfish'];
+      for (const col of dietaryCols) {
+        if (!itemColNames.includes(col)) {
+          await exec(`ALTER TABLE items ADD COLUMN ${col} INTEGER NOT NULL DEFAULT 0`);
+        }
       }
 
       // Seed a default admin user if none exists yet.

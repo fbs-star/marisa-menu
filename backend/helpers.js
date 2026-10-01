@@ -100,6 +100,19 @@ function nestItem(row) {
       is_our_favorite: !!row.is_our_favorite,
       is_healthy: !!row.is_healthy,
     },
+    // Factual dietary/allergen flags (distinct from the marketing `badges`
+    // above). Rendered on the tablet app as small icons next to the item
+    // name, with a bottom legend bar explaining each symbol in all 5
+    // languages. Sourced from the restaurant's printed menu and corrected
+    // against each item's actual ingredients — see
+    // claude/marisa-menu-deployment.md for the list of corrections made.
+    dietary: {
+      is_spicy: !!row.is_spicy,
+      is_vegan: !!row.is_vegan,
+      is_gluten_free: !!row.is_gluten_free,
+      contains_pork: !!row.contains_pork,
+      contains_shellfish: !!row.contains_shellfish,
+    },
     is_snooze: !!row.is_snooze,
     preparation_time: row.preparation_time,
     stock: row.stock,
