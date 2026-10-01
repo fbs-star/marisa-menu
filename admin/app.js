@@ -731,6 +731,10 @@
         </div>
         <div id="import-result" class="import-result"></div>
       </div>
+      <div class="page-header" style="margin-top:26px;"><div><h1 style="font-size:17px;">Import History</h1><p>Every upload attempt, most recent first — use this to spot when an old spreadsheet gets re-uploaded by mistake (new items with no photo are the telltale sign).</p></div></div>
+      <div class="card">
+        <div id="import-history">Loading…</div>
+      </div>
     `;
     main.querySelector('#import-file').addEventListener('change', async (e) => {
       const file = e.target.files[0];
@@ -749,10 +753,58 @@
           ${r.items.skipped.length ? `<p><strong>Skipped (${r.items.skipped.length}):</strong></p><ul>${r.items.skipped.map((s) => `<li>${escapeHtml(s.name_en)} — ${escapeHtml(s.reason)}</li>`).join('')}</ul>` : ''}
         `;
         await loadAll();
+        await loadImportHistory(main);
       } catch (err) {
         resultBox.innerHTML = `<div class="error-msg">${escapeHtml(err.message)}</div>`;
       }
     });
+    loadImportHistory(main);
+  }
+
+  async function loadImportHistory(main) {
+    const box = main.querySelector('#import-history');
+    if (!box) return;
+    try {
+      const { logs } = await api('/admin/import/logs');
+      if (!logs.length) {
+        box.innerHTML = '<p style="padding:16px; color:var(--ink-soft);">No import attempts recorded yet.</p>';
+        return;
+      }
+      box.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Date / time</th><th>Filename</th><th>From</th><th>Status</th>
+            <th>Categories</th><th>Items</th><th>New item names</th>
+          </tr></thead>
+          <tbody>
+            ${logs.map((l) => `
+              <tr>
+                <td>${escapeHtml(formatLogDate(l.created_at))}</td>
+                <td>${escapeHtml(l.filename || '—')}</td>
+                <td>${escapeHtml(l.ip_address || '—')}</td>
+                <td>${l.status === 'success' ? '<span class="pill pill-on">success</span>' : `<span class="pill pill-sold" title="${escapeAttr(l.error_message || '')}">failed</span>`}</td>
+                <td>${l.categories_created} created, ${l.categories_updated} updated</td>
+                <td>${l.items_created} created, ${l.items_updated} updated${l.items_skipped ? `, ${l.items_skipped} skipped` : ''}</td>
+                <td>${l.created_item_names.length ? escapeHtml(l.created_item_names.join(', ')) : '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } catch (e) {
+      box.innerHTML = `<div class="error-msg" style="padding:16px;">${escapeHtml(e.message)}</div>`;
+    }
+  }
+
+  function formatLogDate(iso) {
+    if (!iso) return '—';
+    // created_at is stored as a UTC "YYYY-MM-DD HH:MM:SS" string (SQLite/libSQL
+    // CURRENT_TIMESTAMP default) with no timezone marker, so it must be told
+    // it's UTC before converting — otherwise the browser treats it as local
+    // time and the displayed time is off by the local UTC offset.
+    const d = new Date(iso.includes('T') ? iso : iso.replace(' ', 'T') + 'Z');
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
   }
 
   // ---------------- Helpers ----------------
