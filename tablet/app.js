@@ -23,91 +23,54 @@
   // Factual dietary/allergen flags (item.dietary — see backend/helpers.js
   // nestItem()), distinct from the marketing BADGE_LABELS above. Rendered as
   // small icons next to the item name (renderDietaryIcons) plus a bottom
-  // legend explaining each one (renderDietaryLegend). Order and icon style
-  // match the owner's reference artwork (filled gold glyphs: crossed chilies
-  // for Spicy, a slashed wheat stalk in a circle for Gluten-Free, a sprout
-  // for Vegan, a pig face for Contains Pork, a shrimp for Contains Shell) —
-  // redrawn as vector icons rather than a pixel copy of the reference image,
-  // so they stay crisp at any size. Three of them (Gluten-Free, Contains
-  // Pork, Contains Shell) punch a few true-transparent holes (eyes, nostrils,
-  // the wheat+slash, a thin antenna line) via an SVG <mask>, which — unlike a
-  // hardcoded white shape — lets whatever is actually behind the icon show
-  // through, so the same icon looks right on both the light item cards and
-  // the dark legend bar. Each mask needs a document-unique id (building the
-  // same icon twice with the same id would make browsers share one mask
-  // between them), so svg() below takes a per-render uid and a small counter
-  // hands out a fresh one on every call.
-  let dietaryIconUid = 0;
+  // legend explaining each one (renderDietaryLegend).
+  //
+  // The owner sent the exact artwork to use (a small gold legend strip reading
+  // "Spicy · Gluten-Free · Vegan · Contains Pork · Contains Shell") and asked
+  // for these icons specifically, not a lookalike redraw. So each `d` below
+  // is traced directly from that reference image rather than hand-drawn:
+  // thresholded to a clean silhouette, then run through potrace (a
+  // raster-to-vector tool) to get the exact outline as a bezier path. Each
+  // icon keeps its own natural viewBox (set per-entry below) rather than
+  // being force-fit to a shared 24x24 grid, since that's what potrace traced
+  // from the source pixels. The Gluten-Free and Contains Shell holes (the
+  // wheat+slash, the antenna line) come for free from the traced path's own
+  // subpaths (SVG's default nonzero fill rule treats an oppositely-wound
+  // inner subpath as a hole) — no `<mask>` needed. The two small eye dots on
+  // Contains Pork were too faint to survive the trace at this icon's size, so
+  // they're added back as two plain circles alongside the traced path.
   const DIETARY_DEFS = [
     {
-      key: 'is_spicy', label: 'dietSpicy', cls: 'dietary-spicy',
-      svg: () => {
-        const pepper = '<path fill="currentColor" d="M7.2 17.6c-.5 1.1.3 2.1 1.4 1.8c.7-.2 1.2-.8 1.6-1.4c2.1-3.5 4.6-6.7 7.4-9.6c.8-.8.2-2.1-.9-2c-.8.1-1.5.6-2.1 1.2c-2.6 2.9-4.9 6.1-6.7 9.6c-.2.3-.5.5-.7.4Z"/>'
-          + '<path fill="currentColor" d="M8.6 7.1c.5-1.1 1.7-1.7 2.8-1.3c-.1 1.1-.9 2-2 2.2Z"/>'
-          + '<path fill="currentColor" d="M7.9 7.9c-1.2.1-2.2-.6-2.5-1.7c1.1-.4 2.2 0 2.9.9Z"/>';
-        return `<g>${pepper}</g><g transform="scale(-1,1) translate(-24,0)">${pepper}</g>`;
-      },
+      key: 'is_spicy', label: 'dietSpicy', cls: 'dietary-spicy', viewBox: '0 0 32 40',
+      svg: () => '<g transform="translate(0,40) scale(0.1,-0.1)" fill="currentColor">'
+        + '<path d="M84 185 c-4 -8 -4 -22 0 -30 3 -8 0 -26 -6 -40 -23 -50 52 -115 134 -115 26 0 50 5 53 10 3 6 -2 10 -12 10 -28 1 -52 24 -76 72 -17 32 -29 44 -49 46 -30 4 -44 28 -27 48 9 11 9 14 0 14 -6 0 -14 -7 -17 -15z m56 -65 c0 -5 -5 -10 -11 -10 -5 0 -7 5 -4 10 3 6 8 10 11 10 2 0 4 -4 4 -10z M153 183 c-34 -13 6 -62 53 -64 23 -1 25 -3 7 -6 -27 -5 -30 -21 -7 -30 12 -4 13 -7 3 -14 -10 -6 -9 -10 5 -15 24 -9 56 27 56 63 0 13 5 33 10 44 13 24 -11 27 -30 4 -18 -21 -32 -19 -25 5 6 17 2 20 -27 19 -18 0 -39 -3 -45 -6z"/>'
+        + '</g>',
     },
     {
-      key: 'is_gluten_free', label: 'dietGlutenFree', cls: 'dietary-gluten-free',
-      svg: (uid) => `
-        <defs><mask id="dmask-g${uid}"><rect width="24" height="24" fill="#fff"/>
-          <g fill="#000" stroke="#000" stroke-linejoin="round">
-            <path d="M12 7c.9.9 1.2 1.8.8 2.6c-.9-.2-1.5-.9-.8-2.6Z"/>
-            <path d="M12 7c-.9.9-1.2 1.8-.8 2.6c.9-.2 1.5-.9.8-2.6Z"/>
-            <path d="M9.6 9.6c1 0 2 .5 2.4 1.5c-.9.5-2 .3-2.4-1.5Z"/>
-            <path d="M14.4 9.6c-1 0-2 .5-2.4 1.5c.9.5 2 .3 2.4-1.5Z"/>
-            <path d="M9.2 12.2c1 0 2 .5 2.4 1.5c-.9.5-2 .3-2.4-1.5Z"/>
-            <path d="M14.8 12.2c-1 0-2 .5-2.4 1.5c.9.5 2 .3 2.4-1.5Z"/>
-            <line x1="12" y1="7" x2="12" y2="17" stroke-width="0.7"/>
-            <line x1="6.5" y1="6.5" x2="17.5" y2="17.5" stroke-width="1.7" stroke-linecap="round"/>
-          </g>
-        </mask></defs>
-        <circle cx="12" cy="12" r="9.5" fill="currentColor" mask="url(#dmask-g${uid})"/>
-      `,
+      key: 'is_gluten_free', label: 'dietGlutenFree', cls: 'dietary-gluten-free', viewBox: '0 0 35 40',
+      svg: () => '<g transform="translate(0,40) scale(0.1,-0.1)" fill="currentColor">'
+        + '<path d="M145 188 c-30 -16 -30 -16 -10 -38 l18 -20 14 20 c15 21 15 21 39 -5 15 -17 24 -38 24 -59 0 -19 7 -40 16 -47 14 -11 18 -10 30 6 32 44 10 111 -46 140 -34 18 -58 19 -85 3z M92 148 c-22 -22 -14 -92 13 -122 20 -22 32 -26 79 -26 58 0 76 11 56 35 -16 19 -25 19 -44 -1 -9 -8 -16 -11 -16 -5 0 5 -9 13 -20 16 -15 5 -20 15 -20 44 0 44 -28 79 -48 59z M175 150 c-4 -6 -3 -16 3 -22 5 -5 12 -6 15 -1 3 5 2 15 -2 22 -7 10 -10 10 -16 1z M152 109 c2 -7 10 -15 17 -17 8 -3 12 1 9 9 -2 7 -10 15 -17 17 -8 3 -12 -1 -9 -9z M195 109 c-4 -6 -5 -13 -2 -16 7 -7 27 6 27 18 0 12 -17 12 -25 -2z M152 69 c2 -7 10 -15 17 -17 8 -3 12 1 9 9 -2 7 -10 15 -17 17 -8 3 -12 -1 -9 -9z M195 69 c-4 -6 -5 -13 -2 -16 7 -7 27 6 27 18 0 12 -17 12 -25 -2z"/>'
+        + '</g>',
     },
     {
-      key: 'is_vegan', label: 'dietVegan', cls: 'dietary-vegan',
-      svg: () => '<path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M7.3 8c2.6 2.2 4.5 5.6 5 10.2"/>'
-        + '<path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M15 9.6c-1.3 2.4-2.2 5.2-2.5 8.4"/>'
-        + '<path fill="currentColor" d="M13.5 8.3c2.3 0 4.1 1.8 4.2 4c-2.2.4-4.2-.5-5-2.5c-.3-.8 0-1.5.8-1.5Z"/>',
+      key: 'is_vegan', label: 'dietVegan', cls: 'dietary-vegan', viewBox: '0 0 34 40',
+      svg: () => '<g transform="translate(0,40) scale(0.1,-0.1)" fill="currentColor">'
+        + '<path d="M70 195 c0 -2 11 -15 24 -28 22 -23 66 -123 66 -152 0 -31 18 -13 29 27 8 34 18 46 43 58 29 13 33 20 36 59 2 23 0 41 -5 39 -4 -2 -25 -12 -45 -21 -30 -14 -38 -23 -38 -43 0 -24 2 -25 18 -13 15 12 16 12 5 -2 -7 -8 -16 -26 -21 -39 -9 -23 -10 -22 -31 25 -22 49 -57 95 -73 95 -4 0 -8 -2 -8 -5z"/>'
+        + '</g>',
     },
     {
-      key: 'contains_pork', label: 'dietContainsPork', cls: 'dietary-pork',
-      svg: (uid) => `
-        <defs><mask id="dmask-p${uid}"><rect width="24" height="24" fill="#fff"/>
-          <g fill="#000">
-            <circle cx="9.3" cy="11.3" r="0.9"/>
-            <circle cx="14.7" cy="11.3" r="0.9"/>
-            <ellipse cx="12" cy="15.2" rx="3.1" ry="2.2"/>
-          </g>
-        </mask></defs>
-        <path fill="currentColor" d="M5.3 6.8c-1.1-.5-2.3-.2-2.9.8c-.6.9-.2 2 .8 2.7c.9.6 2.1.6 3.1 0Z"/>
-        <path fill="currentColor" d="M18.7 6.8c1.1-.5 2.3-.2 2.9.8c.6.9.2 2-.8 2.7c-.9.6-2.1.6-3.1 0Z"/>
-        <path fill="currentColor" mask="url(#dmask-p${uid})" d="M12 4.3c4.1 0 7.3 3.2 7.3 7.1c0 4.1-3.3 7.5-7.3 7.5s-7.3-3.4-7.3-7.5c0-3.9 3.2-7.1 7.3-7.1Z"/>
-        <circle cx="11" cy="15.2" r="0.75" fill="currentColor"/>
-        <circle cx="13" cy="15.2" r="0.75" fill="currentColor"/>
-      `,
+      key: 'contains_pork', label: 'dietContainsPork', cls: 'dietary-pork', viewBox: '0 0 38 40',
+      svg: () => '<g transform="translate(0,40) scale(0.1,-0.1)" fill="currentColor">'
+        + '<path d="M95 175 c-25 -21 -28 -26 -15 -35 8 -5 25 -10 38 -10 19 0 22 5 22 35 0 42 -5 43 -45 10z M155 188 c-2 -7 -5 -24 -7 -38 -3 -21 -8 -25 -38 -26 -42 0 -51 -23 -25 -70 21 -40 52 -54 119 -54 59 0 100 27 112 74 9 38 1 50 -37 50 -31 1 -34 4 -39 36 -5 32 -8 35 -43 38 -24 2 -39 -1 -42 -10z m86 -104 c21 -25 -1 -49 -46 -49 -45 0 -67 24 -46 49 17 21 75 21 92 0z M162 78 c-17 -17 4 -38 39 -38 33 0 45 15 29 35 -15 18 -52 19 -68 3z M256 193 c-9 -10 -7 -51 4 -58 14 -9 60 6 60 19 0 14 -55 48 -64 39z"/>'
+        + '</g>'
+        + '<circle cx="13.5" cy="19.3" r="1.15" fill="currentColor"/>'
+        + '<circle cx="24.3" cy="19.3" r="1.15" fill="currentColor"/>',
     },
     {
-      key: 'contains_shellfish', label: 'dietContainsShellfish', cls: 'dietary-shellfish',
-      svg: (uid) => `
-        <defs><mask id="dmask-s${uid}"><rect width="24" height="24" fill="#fff"/>
-          <g stroke="#000" fill="none" stroke-linecap="round">
-            <line x1="2" y1="6.6" x2="7.5" y2="8.3" stroke-width="0.7"/>
-            <path d="M9.5 8.3c.6.9.6 1.9 0 2.7" stroke-width="0.7"/>
-            <path d="M11.8 10.3c.6.9.6 1.9 0 2.7" stroke-width="0.7"/>
-            <path d="M14 12.6c.6.9.6 1.9 0 2.7" stroke-width="0.7"/>
-          </g>
-        </mask></defs>
-        <g mask="url(#dmask-s${uid})">
-          <circle cx="7.3" cy="8.6" r="2.1" fill="currentColor"/>
-          <path fill="currentColor" d="M7.8 9.6c2.3-.5 4.6.2 6.1 2c1.9 2.3 1.7 5.6-.4 7.6c-1.7 1.6-4.2 1.8-6.1.6c.4-1 1.3-1.6 2.4-1.6c-1.6-.6-2.7-2-2.9-3.7c-1 .5-2.2.2-2.9-.7c.7-.8 1.8-1.1 2.8-.7c-.7-1.1-.8-2.4-.3-3.6c-1 0-1.9-.6-2.3-1.6c1-.5 2.1-.3 2.9.5c-.1-.4 0-.8.2-1.1Z"/>
-          <path fill="currentColor" d="M14 17.3c1.3.2 2.3 1.2 2.5 2.5c-1.3.3-2.6-.3-3.2-1.5Z"/>
-          <path fill="currentColor" d="M15.2 15.3c1.3-.2 2.6.4 3.2 1.6c-1.1.8-2.6.6-3.5-.4Z"/>
-          <path fill="currentColor" d="M15.7 12.8c1.3-.5 2.8 0 3.6 1.1c-1 .9-2.5 1-3.6.1Z"/>
-        </g>
-      `,
+      key: 'contains_shellfish', label: 'dietContainsShellfish', cls: 'dietary-shellfish', viewBox: '0 0 38 40',
+      svg: () => '<g transform="translate(0,40) scale(0.1,-0.1)" fill="currentColor">'
+        + '<path d="M76 192 c-11 -18 4 -37 44 -55 22 -10 40 -25 40 -33 0 -20 23 -17 37 4 8 14 20 17 46 14 35 -4 35 -4 28 -62 -2 -10 -5 -7 -11 8 -9 22 -44 30 -55 12 -3 -5 -1 -17 4 -27 5 -10 12 -26 15 -35 7 -23 35 -23 43 0 4 9 15 24 24 32 10 8 20 29 23 45 6 31 -12 80 -29 80 -6 0 -15 4 -21 8 -7 4 -23 7 -35 7 -13 1 -52 3 -85 6 -36 3 -64 2 -68 -4z m84 -12 c-36 -12 -70 -12 -70 0 0 6 21 10 48 9 38 -1 42 -2 22 -9z"/>'
+        + '</g>',
     },
   ];
 
@@ -118,7 +81,7 @@
     const active = DIETARY_DEFS.filter((d) => dietary[d.key]);
     if (!active.length) return '';
     return `<span class="item-dietary">${active.map((d) => `
-      <span class="dietary-icon ${d.cls}" title="${escapeHtml(t(d.label))}"><svg viewBox="0 0 24 24" aria-hidden="true">${d.svg(++dietaryIconUid)}</svg></span>
+      <span class="dietary-icon ${d.cls}" title="${escapeHtml(t(d.label))}"><svg viewBox="${d.viewBox}" aria-hidden="true">${d.svg()}</svg></span>
     `).join('')}</span>`;
   }
 
