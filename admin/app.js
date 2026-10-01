@@ -11,6 +11,14 @@
     ['is_must_try', 'Must Try'], ['is_best_seller', 'Best Seller'], ['is_our_favorite', 'Our Favorite'],
     ['is_healthy', 'Healthy'],
   ];
+  // Factual dietary/allergen flags shown to guests as small icons next to the
+  // item name, plus a legend bar at the bottom of the tablet app. Distinct
+  // from BADGES above (restaurant-chosen marketing pills) — these should
+  // only be set based on the dish's actual ingredients.
+  const DIETARY = [
+    ['is_spicy', 'Spicy'], ['is_vegan', 'Vegan'], ['is_gluten_free', 'Gluten-Free'],
+    ['contains_pork', 'Contains Pork'], ['contains_shellfish', 'Contains Shellfish'],
+  ];
   // The top-level guest-facing menus a category or promotion can belong to.
   // Shared by both the Categories and Promotions pages so the option list
   // and pill styling stay in sync everywhere.
@@ -243,7 +251,7 @@
       </div>
       <div class="card">
         <table>
-          <thead><tr><th>Name (EN)</th><th>Price</th><th>Sold by</th><th>Badges</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Name (EN)</th><th>Price</th><th>Sold by</th><th>Badges</th><th>Dietary</th><th>Status</th><th></th></tr></thead>
           <tbody>
             ${items.map((i) => `
               <tr class="${i.published ? '' : 'row-draft'}">
@@ -251,6 +259,7 @@
                 <td>${i.price ?? '—'}</td>
                 <td>${i.unit ? (i.unit === 'bottle' ? 'Bottle' : 'Glass') : '—'}</td>
                 <td>${Object.entries(i.badges).filter(([, v]) => v).map(([k]) => (BADGES.find((b) => b[0] === k) || [k, k])[1]).join(', ') || '—'}</td>
+                <td>${i.dietary ? Object.entries(i.dietary).filter(([, v]) => v).map(([k]) => (DIETARY.find((d) => d[0] === k) || [k, k])[1]).join(', ') || '—' : '—'}</td>
                 <td>
                   <span class="pill ${i.published ? 'pill-on' : 'pill-off'}">${i.published ? 'Published' : 'Hidden'}</span>
                   ${i.sold_out ? '<span class="pill pill-sold">Sold out</span>' : ''}
@@ -262,7 +271,7 @@
                   <button class="icon-btn" data-del-item="${i.id}">Delete</button>
                 </td>
               </tr>
-            `).join('') || `<tr><td colspan="6" class="empty-hint">No items in this category yet.</td></tr>`}
+            `).join('') || `<tr><td colspan="7" class="empty-hint">No items in this category yet.</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -287,7 +296,7 @@
 
   function openItemModal(item, defaultCategory) {
     const isNew = !item;
-    const data = item || { name: {}, description: {}, price_note: {}, badges: {}, category_id: defaultCategory && defaultCategory.id, image: null };
+    const data = item || { name: {}, description: {}, price_note: {}, badges: {}, dietary: {}, category_id: defaultCategory && defaultCategory.id, image: null };
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     backdrop.innerHTML = `
@@ -332,6 +341,12 @@
           <div class="badge-grid">
             ${BADGES.map(([key, label]) => `<label class="checkbox-row"><input type="checkbox" data-field="${key}" ${data.badges && data.badges[key] ? 'checked' : ''}/> ${label}</label>`).join('')}
           </div>
+        </div>
+        <div class="field"><label>Dietary / allergens</label>
+          <div class="badge-grid">
+            ${DIETARY.map(([key, label]) => `<label class="checkbox-row"><input type="checkbox" data-field="${key}" ${data.dietary && data.dietary[key] ? 'checked' : ''}/> ${label}</label>`).join('')}
+          </div>
+          <p class="field-hint">Shown to guests as small icons next to the item name, with a legend at the bottom of the menu. Base these on the dish's actual ingredients, not the printed menu alone.</p>
         </div>
         <div class="modal-actions">
           <button class="btn btn-secondary" data-cancel>Cancel</button>
@@ -382,6 +397,7 @@
       payload.preparation_time = numOrNull(backdrop.querySelector('[data-field="preparation_time"]').value);
       payload.image = backdrop.querySelector('[data-field="image"]').value || null;
       BADGES.forEach(([key]) => { payload[key] = backdrop.querySelector(`[data-field="${key}"]`).checked; });
+      DIETARY.forEach(([key]) => { payload[key] = backdrop.querySelector(`[data-field="${key}"]`).checked; });
       saveBtn.disabled = true;
       saveBtn.textContent = 'Saving…';
       try {
