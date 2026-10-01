@@ -3,11 +3,11 @@
   const RTL_LANGS = new Set(['ar']);
 
   const UI_STRINGS = {
-    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.', promoTabFood: 'Food', promoTabDrink: 'Drinks', promoTabThemeNight: 'Theme Night' },
-    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้', promoTabFood: 'อาหาร', promoTabDrink: 'เครื่องดื่ม', promoTabThemeNight: 'ธีมค่ำคืน' },
-    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.', promoTabFood: 'Еда', promoTabDrink: 'Напитки', promoTabThemeNight: 'Тематический вечер' },
-    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。', promoTabFood: '餐食', promoTabDrink: '饮品', promoTabThemeNight: '主题之夜' },
-    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.', promoTabFood: 'طعام', promoTabDrink: 'مشروبات', promoTabThemeNight: 'ليلة موضوعية' },
+    en: { menu: 'Menu', itemsCount: (n) => `${n} item${n === 1 ? '' : 's'}`, soldOut: 'Sold out', prepTime: (m) => `${m} min`, loadError: 'Could not load the menu. Please check your connection and try again.', empty: 'No items in this category yet.', foodMenu: 'Food Menu', drinksMenu: 'Drinks Menu', wineMenu: 'Wine Menu', promotionMenu: 'Promotion', back: 'Back', noPromotions: 'No promotions right now.', promoTabFood: 'Food', promoTabDrink: 'Drinks', promoTabThemeNight: 'Theme Night', allergyNotice: 'Please inform our service team before placing your order if a person in your party has a food allergy or has any dietary requirements.' },
+    th: { menu: 'เมนู', itemsCount: (n) => `${n} รายการ`, soldOut: 'หมดชั่วคราว', prepTime: (m) => `${m} นาที`, loadError: 'ไม่สามารถโหลดเมนูได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองใหม่', empty: 'ยังไม่มีรายการในหมวดนี้', foodMenu: 'เมนูอาหาร', drinksMenu: 'เมนูเครื่องดื่ม', wineMenu: 'เมนูไวน์', promotionMenu: 'โปรโมชั่น', back: 'กลับ', noPromotions: 'ยังไม่มีโปรโมชั่นในโขณะนี้', promoTabFood: 'อาหาร', promoTabDrink: 'เครื่องดื่ม', promoTabThemeNight: 'ธีมค่ำคืน', allergyNotice: 'กรุณาแจ้งพนักงานก่อนสั่งอาหาร หากท่านหรือผู้ร่วมโต๊ะมีอาการแพ้อาหารหรือข้อจำกัดด้านอาหาร' },
+    ru: { menu: 'Меню', itemsCount: (n) => `${n} поз.`, soldOut: 'Нет в наличии', prepTime: (m) => `${m} мин`, loadError: 'Не удалось загрузить меню. Проверьте соединение и попробуйте снова.', empty: 'В этой категории пока нет блюд.', foodMenu: 'Меню блюд', drinksMenu: 'Меню напитков', wineMenu: 'Винная карта', promotionMenu: 'Акции', back: 'Назад', noPromotions: 'Сейчас нет активных акций.', promoTabFood: 'Еда', promoTabDrink: 'Напитки', promoTabThemeNight: 'Тематический вечер', allergyNotice: 'Пожалуйста, сообщите нашим сотрудникам перед заказом, если у кого-то из вашей компании есть пищевая аллергия или особые требования к питанию.' },
+    zh: { menu: '菜单', itemsCount: (n) => `${n} 项`, soldOut: '暂时缺货', prepTime: (m) => `${m} 分钟`, loadError: '无法加载菜单，请检查网络连接后重试。', empty: '该分类暂无项目。', foodMenu: '餐食菜单', drinksMenu: '饮品菜单', wineMenu: '酒水单', promotionMenu: '优惠活动', back: '返回', noPromotions: '暂无优惠活动。', promoTabFood: '餐食', promoTabDrink: '饮品', promoTabThemeNight: '主题之夜', allergyNotice: '如果您或同桌的客人对某些食物过敏或有饮食限制，请在点餐前告知我们的服务人员。' },
+    ar: { menu: 'القائمة', itemsCount: (n) => `${n} صنف`, soldOut: 'غير متوفر حالياً', prepTime: (m) => `${m} دقيقة`, loadError: 'تعذر تحميل القائمة. يرجى التحقق من الاتصال والمحاولة مرة أخرى.', empty: 'لا توجد عناصر في هذا القسم بعد.', foodMenu: 'قائمة الطعام', drinksMenu: 'قائمة المشروبات', wineMenu: 'قائمة النبيذ', promotionMenu: 'العروض', back: 'رجوع', noPromotions: 'لا توجد عروض حالياً.', promoTabFood: 'طعام', promoTabDrink: 'مشروبات', promoTabThemeNight: 'ليلة موضوعية', allergyNotice: 'يرجى إبلاغ فريق الخدمة لدينا قبل تقديم طلبكم إذا كان أحد أفراد مجموعتكم يعاني من حساسية تجاه الطعام أو لديه أي متطلبات غذائية خاصة.' },
   };
 
   const BADGE_LABELS = {
@@ -98,6 +98,7 @@
     const app = document.getElementById('app');
     document.body.setAttribute('data-lang', state.lang);
     document.body.setAttribute('dir', RTL_LANGS.has(state.lang) ? 'rtl' : 'ltr');
+    renderAllergyNotice();
 
     if (!state.menu) {
       app.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
@@ -107,6 +108,15 @@
     if (state.view === 'home') return renderHome();
     if (state.view === 'promotions') return renderPromotions();
     return renderMenu();
+  }
+
+  // Fills the fixed allergy/dietary notice bar (see #allergy-notice in
+  // index.html — deliberately outside #app, so it survives every view's
+  // full innerHTML replacement above). Called on every render(), including a
+  // language switch, so its text always matches state.lang.
+  function renderAllergyNotice() {
+    const bar = document.getElementById('allergy-notice');
+    if (bar) bar.textContent = t('allergyNotice');
   }
 
   function renderLangSwitcher(active) {

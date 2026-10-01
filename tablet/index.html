@@ -15,6 +15,12 @@
       <div class="spinner"></div>
     </div>
   </div>
+  <!-- Allergy/dietary notice bar: deliberately outside #app, which app.js
+       fully replaces (innerHTML) on every render(). Kept here as a fixed
+       sibling so it persists unchanged across every screen (home, menu,
+       promotions) and every re-render; app.js only ever updates its text
+       (see renderAllergyNotice() / t('allergyNotice')). -->
+  <div id="allergy-notice" class="allergy-notice"></div>
   <script src="app.js"></script>
 </body>
 </html>
