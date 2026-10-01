@@ -66,7 +66,7 @@ async function importWorkbook(buffer) {
   const sectionRows = XLSX.utils.sheet_to_json(sectionSheet, { defval: '' });
   const itemRows = XLSX.utils.sheet_to_json(itemSheet, { defval: '' });
 
-  const result = { categories: { created: 0, updated: 0 }, items: { created: 0, updated: 0, skipped: [] } };
+  const result = { categories: { created: 0, updated: 0 }, items: { created: 0, updated: 0, skipped: [], createdNames: [] } };
   const sectionKeyToCategoryId = {};
 
   await db.runInTransaction(async (tx) => {
@@ -206,6 +206,7 @@ async function importWorkbook(buffer) {
             @is_healthy, @is_snooze, @preparation_time, @stock, @published, @sort_order)
         `, data);
         result.items.created++;
+        result.items.createdNames.push(name_en);
       }
     }
   });

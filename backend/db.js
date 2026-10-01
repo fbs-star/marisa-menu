@@ -110,6 +110,30 @@ CREATE TABLE IF NOT EXISTS promotions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_items_category ON items(category_id);
+
+-- Audit trail for admin -> Import Menu uploads. Added after a recurring-
+-- duplicate-items investigation found that re-uploading a stale copy of the
+-- old menu spreadsheet was silently re-creating duplicate rows, and that
+-- there was no way at all to tell when or how often that had happened (the
+-- app had no request logging, and Render's own logs for this service don't
+-- retain per-request access logs). This table exists purely so the next
+-- occurrence is traceable: every import attempt (success or failure) writes
+-- one row here, including which item names were newly created, which is the
+-- fastest signal for recognizing "this was the old spreadsheet again."
+CREATE TABLE IF NOT EXISTS import_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  filename TEXT,
+  ip_address TEXT,
+  status TEXT NOT NULL DEFAULT 'success',
+  error_message TEXT,
+  categories_created INTEGER NOT NULL DEFAULT 0,
+  categories_updated INTEGER NOT NULL DEFAULT 0,
+  items_created INTEGER NOT NULL DEFAULT 0,
+  items_updated INTEGER NOT NULL DEFAULT 0,
+  items_skipped INTEGER NOT NULL DEFAULT 0,
+  created_item_names TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 `;
 
 // libSQL's named-parameter binding is strict: it requires the args object to

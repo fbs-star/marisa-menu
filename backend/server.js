@@ -18,6 +18,11 @@ const { initDb } = require('./db'); // ensure DB + default admin user are initia
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Render puts the app behind a reverse proxy, so without this, req.ip (used
+// by the Import Menu audit log — see backend/routes/import.js) would always
+// resolve to the proxy's own address instead of the real uploader's.
+app.set('trust proxy', true);
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
