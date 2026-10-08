@@ -385,7 +385,13 @@
 
   function renderCategoryContent(category) {
     if (!category) return `<div class="empty-state">${escapeHtml(t('empty'))}</div>`;
-    const hasDietary = category.items.some((i) => i.dietary && Object.values(i.dietary).some(Boolean));
+    // Show the icon guide on every Food Menu page, not just pages where at
+    // least one item happens to carry a flag — otherwise pages like Kids Menu -
+    // Soup / Dessert (no flagged items) looked inconsistent next to their
+    // neighbours. Non-food categories (drinks/wine) keep the old behaviour: only
+    // shown if an item there actually has a flag.
+    const hasDietary = category.menu_group === 'food'
+      || category.items.some((i) => i.dietary && Object.values(i.dietary).some(Boolean));
     return `
       <div class="category-heading">
         <h2>${escapeHtml(fmt(category.name))}</h2>
