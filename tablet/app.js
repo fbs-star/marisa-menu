@@ -823,7 +823,7 @@
           `).join('')}
         </nav>
         ${promotions.length ? `
-          <div class="promo-feed ${state.promoCategory === 'theme_night' ? 'promo-feed-poster' : ''}" id="promo-feed">
+          <div class="promo-feed promo-feed-poster" id="promo-feed">
             ${promotions.map(renderPromoCard).join('')}
           </div>
         ` : `<div class="empty-state">${escapeHtml(t('noPromotions'))}</div>`}
@@ -846,13 +846,18 @@
   }
 
   function renderPromoCard(promo) {
-    // Theme Night promotions are portrait A4 posters with the title/menu already
-    // printed on them, so on that tab each card shows the whole poster (no
-    // landscape crop, no text overlay) with the title as a caption underneath.
-    if (state.promoCategory === 'theme_night' && promo.image) {
+    // Promotion-page cards (every tab) are portrait A4 poster cards: the whole
+    // poster is visible (no landscape crop, no text overlay) with the title as a
+    // caption underneath. Food/Drinks promos use their portrait full-screen image
+    // (the landscape banner image is only for the strip on the menu pages);
+    // Theme Night uses its card image, falling back to the full-screen one.
+    const posterSrc = state.promoCategory === 'theme_night'
+      ? (promo.image || promo.detail_image)
+      : (promo.detail_image || promo.image);
+    if (posterSrc) {
       return `
       <div class="promo-card promo-card-poster" data-promo="${promo.id}">
-        <div class="promo-card-image" style="background-image:url('${promo.image}')"></div>
+        <div class="promo-card-image" style="background-image:url('${posterSrc}')"></div>
         <div class="promo-card-caption">
           <div class="promo-card-title">${escapeHtml(fmt(promo.title))}</div>
           ${fmt(promo.subtitle) ? `<div class="promo-card-subtitle">${escapeHtml(fmt(promo.subtitle))}</div>` : ''}
