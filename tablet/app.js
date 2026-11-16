@@ -399,7 +399,7 @@
             <button class="home-btn" data-go="food">${escapeHtml(t('foodMenu'))}</button>
             <button class="home-btn" data-go="drink">${escapeHtml(t('drinksMenu'))}</button>
             ${wineCount ? `<button class="home-btn" data-go="wine">${escapeHtml(t('wineMenu'))}</button>` : ''}
-            <button class="home-btn" data-go="hbfb">HB / FB</button>
+            <button class="home-btn" data-go="hbfb">${escapeHtml(hb('title'))}</button>
             ${promoCount ? `<button class="home-btn home-btn-accent" data-go="promotions">${escapeHtml(t('promotionMenu'))}</button>` : ''}
           </div>
         </div>
