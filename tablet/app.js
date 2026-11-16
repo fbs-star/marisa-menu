@@ -20,7 +20,7 @@
   // titles, theme-night schedule and all-inclusive drink lists live here.
   const HBFB_I18N = {
     en: {
-      title: 'Half Board / Full Board', tabPackages: 'Packages', tabOpt1: 'Option 1', tabOpt2: 'Option 2', tabDrinks: 'All-Inclusive Drinks',
+      title: 'Half Board & Full Board Menu', tabPackages: 'Packages', tabOpt1: 'Option 1', tabOpt2: 'Option 2', tabDrinks: 'All-Inclusive Drinks',
       halfBoard: 'Half Board', fullBoard: 'Full Board', lunchOrDinner: 'Lunch or Dinner', lunchAndDinner: 'Lunch and Dinner',
       option1: 'Option 1', option2: 'Option 2', opt1Line: '1 Appetizer / 1 Main Course / 1 Dessert', opt2Line: 'Flame grills or Theme nights',
       servingTimes: 'Daily serving times', lunch: 'Lunch', dinner: 'Dinner', lunchTime: '12 pm – 2 pm', dinnerTime: '6 pm – 9 pm',
@@ -36,7 +36,7 @@
       served: 'All-inclusive drinks are served during the following times at the following outlets only.', outlet1: '11 am – 9 pm at Marisa Restaurant', outlet2: '11 am – 7 pm at Crocodile Pool Bar',
     },
     th: {
-      title: 'ฮาล์ฟบอร์ด / ฟูลบอร์ด', tabPackages: 'แพ็กเกจ', tabOpt1: 'ตัวเลือกที่ 1', tabOpt2: 'ตัวเลือกที่ 2', tabDrinks: 'เครื่องดื่มออลอินคลูซีฟ',
+      title: 'เมนูฮาล์ฟบอร์ด & ฟูลบอร์ด', tabPackages: 'แพ็กเกจ', tabOpt1: 'ตัวเลือกที่ 1', tabOpt2: 'ตัวเลือกที่ 2', tabDrinks: 'เครื่องดื่มออลอินคลูซีฟ',
       halfBoard: 'ฮาล์ฟบอร์ด', fullBoard: 'ฟูลบอร์ด', lunchOrDinner: 'มื้อกลางวัน หรือ มื้อเย็น', lunchAndDinner: 'มื้อกลางวัน และ มื้อเย็น',
       option1: 'ตัวเลือกที่ 1', option2: 'ตัวเลือกที่ 2', opt1Line: 'อาหารเรียกน้ำย่อย 1 / จานหลัก 1 / ของหวาน 1', opt2Line: 'เมนูย่างเปลวไฟ หรือ ธีมไนท์',
       servingTimes: 'เวลาให้บริการทุกวัน', lunch: 'มื้อกลางวัน', dinner: 'มื้อเย็น', lunchTime: '12:00 – 14:00 น.', dinnerTime: '18:00 – 21:00 น.',
@@ -52,7 +52,7 @@
       served: 'เครื่องดื่มออลอินคลูซีฟให้บริการตามเวลาและสถานที่ต่อไปนี้เท่านั้น', outlet1: '11:00 – 21:00 น. ที่ร้านอาหารมาริสา', outlet2: '11:00 – 19:00 น. ที่ Crocodile Pool Bar',
     },
     ru: {
-      title: 'Полупансион / Полный пансион', tabPackages: 'Пакеты', tabOpt1: 'Вариант 1', tabOpt2: 'Вариант 2', tabDrinks: 'Напитки «всё включено»',
+      title: 'Меню «Полупансион и Полный пансион»', tabPackages: 'Пакеты', tabOpt1: 'Вариант 1', tabOpt2: 'Вариант 2', tabDrinks: 'Напитки «всё включено»',
       halfBoard: 'Полупансион', fullBoard: 'Полный пансион', lunchOrDinner: 'Обед или ужин', lunchAndDinner: 'Обед и ужин',
       option1: 'Вариант 1', option2: 'Вариант 2', opt1Line: '1 закуска / 1 основное блюдо / 1 десерт', opt2Line: 'Блюда на гриле или тематический вечер',
       servingTimes: 'Время обслуживания ежедневно', lunch: 'Обед', dinner: 'Ужин', lunchTime: '12:00 – 14:00', dinnerTime: '18:00 – 21:00',
@@ -68,7 +68,7 @@
       served: 'Напитки «всё включено» подаются только в указанное время и в указанных заведениях.', outlet1: '11:00 – 21:00 — ресторан Marisa', outlet2: '11:00 – 19:00 — Crocodile Pool Bar',
     },
     zh: {
-      title: '半食宿 / 全食宿', tabPackages: '套餐', tabOpt1: '选项一', tabOpt2: '选项二', tabDrinks: '畅饮饮品',
+      title: '半食宿 & 全食宿菜单', tabPackages: '套餐', tabOpt1: '选项一', tabOpt2: '选项二', tabDrinks: '畅饮饮品',
       halfBoard: '半食宿', fullBoard: '全食宿', lunchOrDinner: '午餐或晚餐', lunchAndDinner: '午餐和晚餐',
       option1: '选项一', option2: '选项二', opt1Line: '1份开胃菜 / 1份主菜 / 1份甜点', opt2Line: '火焰烧烤或主题之夜',
       servingTimes: '每日供应时间', lunch: '午餐', dinner: '晚餐', lunchTime: '中午12点 – 下午2点', dinnerTime: '下午6点 – 晚上9点',
@@ -84,7 +84,7 @@
       served: '畅饮饮品仅在以下时间和地点供应。', outlet1: '上午11点至晚上9点：Marisa 餐厅', outlet2: '上午11点至晚上7点：Crocodile 泳池吧',
     },
     ar: {
-      title: 'نصف إقامة / إقامة كاملة', tabPackages: 'الباقات', tabOpt1: 'الخيار 1', tabOpt2: 'الخيار 2', tabDrinks: 'مشروبات «الكل شامل»',
+      title: 'قائمة نصف إقامة وإقامة كاملة', tabPackages: 'الباقات', tabOpt1: 'الخيار 1', tabOpt2: 'الخيار 2', tabDrinks: 'مشروبات «الكل شامل»',
       halfBoard: 'نصف إقامة', fullBoard: 'إقامة كاملة', lunchOrDinner: 'غداء أو عشاء', lunchAndDinner: 'غداء وعشاء',
       option1: 'الخيار 1', option2: 'الخيار 2', opt1Line: 'طبق مقبلات واحد / طبق رئيسي واحد / حلوى واحدة', opt2Line: 'مشويات على اللهب أو ليلة موضوعية',
       servingTimes: 'أوقات التقديم اليومية', lunch: 'الغداء', dinner: 'العشاء', lunchTime: '12 ظهراً – 2 ظهراً', dinnerTime: '6 مساءً – 9 مساءً',
