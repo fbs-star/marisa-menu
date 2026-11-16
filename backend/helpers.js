@@ -29,6 +29,22 @@ function normalizeImage(value) {
   return str.replace(/^\/?uploads\//, '');
 }
 
+// `promotions.detail_images` is stored as a JSON array string of image URLs.
+function parseImageList(value) {
+  if (!value) return [];
+  let arr = value;
+  if (typeof value === 'string') {
+    try { arr = JSON.parse(value); } catch (e) { return []; }
+  }
+  if (!Array.isArray(arr)) return [];
+  return arr.map(normalizeImage).filter(Boolean);
+}
+
+function serializeImageList(value) {
+  const list = parseImageList(value);
+  return list.length ? JSON.stringify(list) : null;
+}
+
 function imageUrl(value) {
   const name = normalizeImage(value);
   if (!name) return null;
@@ -68,6 +84,8 @@ function nestPromotion(row) {
     // guaranteed image to display (the tablet app) fall back to `image`
     // themselves at the point of use.
     detail_image: imageUrl(row.detail_image),
+    // Extra full-screen pages shown after detail_image (swipe in the popup).
+    detail_images: parseImageList(row.detail_images).map(imageUrl),
     menu_group: normalizeMenuGroup(row.menu_group),
     promo_category: normalizePromoCategory(row.promo_category),
     published: !!row.published,
@@ -169,5 +187,5 @@ function boolInt(v) {
 module.exports = {
   LANGS, MENU_GROUPS, normalizeMenuGroup, PROMO_CATEGORIES, normalizePromoCategory,
   nestCategory, nestItem, nestPromotion,
-  flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, imageUrl,
+  flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, imageUrl, parseImageList, serializeImageList,
 };

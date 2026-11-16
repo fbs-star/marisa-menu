@@ -260,6 +260,14 @@ function initDb() {
         await exec('ALTER TABLE promotions ADD COLUMN detail_image TEXT');
       }
 
+      // Migration: add promotions.detail_images — a JSON array of EXTRA full-screen
+      // pages (image URLs) shown after `detail_image` when a guest opens the
+      // promotion (e.g. page 1 = poster in `detail_image`, page 2 = the menu here).
+      // Guests swipe between pages. NULL/empty = single-image popup, as before.
+      if (!promoColNames.includes('detail_images')) {
+        await exec('ALTER TABLE promotions ADD COLUMN detail_images TEXT');
+      }
+
       // Migration: add promotions.promo_category ('food' | 'drink' | 'theme_night').
       // This is a separate concept from menu_group above: menu_group controls
       // which guest-facing menu PAGE (Food/Drinks/Wine) shows this promo as a
