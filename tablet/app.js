@@ -610,8 +610,9 @@
   function renderPromoBanner() {
     // Only show promotions tagged for whichever menu (food/drink) the guest
     // is currently viewing, so a food promo never appears on the drinks menu
-    // and vice versa.
-    const promotions = (state.menu.promotions || []).filter((p) => (p.menu_group || 'food') === state.menuGroup);
+    // and vice versa. Theme Night promotions are left out of this running strip
+    // (they only appear on the Promotion page's Theme Night tab).
+    const promotions = (state.menu.promotions || []).filter((p) => (p.menu_group || 'food') === state.menuGroup && p.promo_category !== 'theme_night');
     if (!promotions.length) return '';
     return `
       <div class="promo-banner-strip" id="promo-banner-strip">
