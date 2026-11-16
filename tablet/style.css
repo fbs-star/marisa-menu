@@ -824,3 +824,18 @@ body[data-lang="th"] .hbfb-drink-title, body[data-lang="zh"] .hbfb-drink-title, 
   .hbfb-title { font-size: 24px; }
   .hbfb-pkg-name { font-size: 21px; }
 }
+
+/* Theme Night tab: portrait poster cards (whole A4 poster visible, caption below). */
+.promo-feed-poster {
+  grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr));
+  gap: 22px;
+  align-items: start;
+}
+.promo-card-poster { background: var(--color-surface); }
+.promo-card-poster .promo-card-image { aspect-ratio: 794 / 1123; display: block; background-size: cover; background-position: center top; }
+.promo-card-caption { padding: 12px 14px 14px; text-align: center; }
+.promo-card-caption .promo-card-title { font-size: 17px; }
+@media (max-width: 800px) {
+  .promo-feed-poster { grid-template-columns: repeat(auto-fill, minmax(min(170px, 100%), 1fr)); gap: 14px; }
+  .promo-card-caption .promo-card-title { font-size: 15px; }
+}
