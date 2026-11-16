@@ -1,7 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
-const { nestPromotion, flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, normalizeMenuGroup, normalizePromoCategory } = require('../helpers');
+const { nestPromotion, flattenTranslatable, flattenTranslatableForUpdate, boolInt, normalizeImage, normalizeMenuGroup, normalizePromoCategory, serializeImageList } = require('../helpers');
 
 const router = express.Router();
 
@@ -31,6 +31,7 @@ router.post('/', requireAuth, async (req, res) => {
     ...flat,
     image: normalizeImage(body.image),
     detail_image: normalizeImage(body.detail_image),
+    detail_images: serializeImageList(body.detail_images),
     menu_group: normalizeMenuGroup(body.menu_group),
     promo_category: normalizePromoCategory(body.promo_category),
     published: body.published === undefined ? 1 : boolInt(body.published),
@@ -38,9 +39,9 @@ router.post('/', requireAuth, async (req, res) => {
   };
   const info = await db.run(`
     INSERT INTO promotions (title_en, title_th, title_ru, title_zh, title_ar,
-      subtitle_en, subtitle_th, subtitle_ru, subtitle_zh, subtitle_ar, image, detail_image, menu_group, promo_category, published, sort_order)
+      subtitle_en, subtitle_th, subtitle_ru, subtitle_zh, subtitle_ar, image, detail_image, detail_images, menu_group, promo_category, published, sort_order)
     VALUES (@title_en, @title_th, @title_ru, @title_zh, @title_ar,
-      @subtitle_en, @subtitle_th, @subtitle_ru, @subtitle_zh, @subtitle_ar, @image, @detail_image, @menu_group, @promo_category, @published, @sort_order)
+      @subtitle_en, @subtitle_th, @subtitle_ru, @subtitle_zh, @subtitle_ar, @image, @detail_image, @detail_images, @menu_group, @promo_category, @published, @sort_order)
   `, values);
   const row = await db.get('SELECT * FROM promotions WHERE id = ?', [info.lastInsertRowid]);
   res.status(201).json(nestPromotion(row));
@@ -57,6 +58,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     ...flat,
     image: body.image !== undefined ? normalizeImage(body.image) : existing.image,
     detail_image: body.detail_image !== undefined ? normalizeImage(body.detail_image) : existing.detail_image,
+    detail_images: body.detail_images !== undefined ? serializeImageList(body.detail_images) : existing.detail_images,
     menu_group: body.menu_group === undefined ? existing.menu_group : normalizeMenuGroup(body.menu_group),
     promo_category: body.promo_category === undefined ? existing.promo_category : normalizePromoCategory(body.promo_category),
     published: body.published === undefined ? existing.published : boolInt(body.published),
@@ -66,7 +68,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     UPDATE promotions SET
       title_en=@title_en, title_th=@title_th, title_ru=@title_ru, title_zh=@title_zh, title_ar=@title_ar,
       subtitle_en=@subtitle_en, subtitle_th=@subtitle_th, subtitle_ru=@subtitle_ru, subtitle_zh=@subtitle_zh, subtitle_ar=@subtitle_ar,
-      image=@image, detail_image=@detail_image, menu_group=@menu_group, promo_category=@promo_category, published=@published, sort_order=@sort_order, updated_at=CURRENT_TIMESTAMP
+      image=@image, detail_image=@detail_image, detail_images=@detail_images, menu_group=@menu_group, promo_category=@promo_category, published=@published, sort_order=@sort_order, updated_at=CURRENT_TIMESTAMP
     WHERE id=@id
   `, values);
   const row = await db.get('SELECT * FROM promotions WHERE id = ?', [req.params.id]);
