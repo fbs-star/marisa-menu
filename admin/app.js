@@ -471,7 +471,7 @@
 
   function openPromotionModal(promo) {
     const isNew = !promo;
-    const data = promo || { title: {}, subtitle: {}, image: null, detail_image: null, menu_group: 'food', promo_category: 'food' };
+    const data = promo || { title: {}, subtitle: {}, image: null, detail_image: null, detail_images: [], menu_group: 'food', promo_category: 'food' };
     const backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     backdrop.innerHTML = `
@@ -488,7 +488,7 @@
         </div>
         <div class="field">
           <label>Banner image</label>
-          <p class="field-hint">Shown as a small landscape card — on the menu page's promo strip and on the Promotion tab's grid.</p>
+          <p class="field-hint">Shown as a small landscape card — on the menu page's promo strip and on the Promotion tab's grid. Recommended size: 1600 × 900 px (16:9); keep the title area at the bottom-left clear.</p>
           <div class="image-upload">
             <div class="image-preview promo-preview" id="img-preview" style="${data.image ? `background-image:url('${data.image}')` : ''}">${data.image ? '' : '🎉'}</div>
             <input type="file" accept="image/*" id="img-input" />
@@ -503,6 +503,12 @@
             <input type="file" accept="image/*" id="detail-img-input" />
           </div>
           <input type="hidden" data-field="detail_image" value="${escapeAttr(data.detail_image || '')}" />
+        </div>
+        <div class="field">
+          <label>More pages (swipe after the full-screen image)</label>
+          <p class="field-hint">Optional. Add extra full-screen pages — for example the menu page after the poster. In the popup, guests swipe (or tap the arrows) from the full-screen image above to these pages, in the order listed here. You can pick several files at once.</p>
+          <div id="extra-pages-list" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px"></div>
+          <input type="file" accept="image/*" id="extra-pages-input" multiple />
         </div>
         <div class="tabs">${LANGS.map((l, i) => `<button class="tab-btn ${i === 0 ? 'active' : ''}" data-tab="${l.code}">${l.label}</button>`).join('')}</div>
         ${LANGS.map((l, i) => `
@@ -559,6 +565,59 @@
     wireImageUpload('#img-input', '#img-preview', 'image', 'Uploading photo…');
     wireImageUpload('#detail-img-input', '#detail-img-preview', 'detail_image', 'Uploading photo…');
 
+    // Extra full-screen pages (promotions.detail_images): an ordered list of
+    // uploaded image URLs, each with move-left / move-right / remove controls.
+    let extraPages = Array.isArray(data.detail_images) ? [...data.detail_images] : [];
+    const extraList = backdrop.querySelector('#extra-pages-list');
+    function renderExtraPages() {
+      extraList.innerHTML = extraPages.map((url, i) => `
+        <div style="width:100px">
+          <div style="width:100px;height:141px;border-radius:10px;border:1px solid #ccd;background:#f4f4f8 center/contain no-repeat url('${escapeAttr(url)}')"></div>
+          <div style="display:flex;gap:4px;justify-content:space-between;margin-top:4px">
+            <button type="button" class="btn btn-secondary" data-extra-left="${i}" ${i === 0 ? 'disabled' : ''} style="padding:2px 8px">◀</button>
+            <button type="button" class="btn btn-secondary" data-extra-del="${i}" style="padding:2px 8px">✕</button>
+            <button type="button" class="btn btn-secondary" data-extra-right="${i}" ${i === extraPages.length - 1 ? 'disabled' : ''} style="padding:2px 8px">▶</button>
+          </div>
+          <div style="text-align:center;font-size:12px;color:#667">Page ${i + 2}</div>
+        </div>`).join('') || '<span style="color:#889;font-size:13px">No extra pages.</span>';
+    }
+    renderExtraPages();
+    extraList.addEventListener('click', (e) => {
+      const l = e.target.closest('[data-extra-left]');
+      const r = e.target.closest('[data-extra-right]');
+      const d = e.target.closest('[data-extra-del]');
+      if (l) { const i = Number(l.dataset.extraLeft); if (i > 0) { [extraPages[i - 1], extraPages[i]] = [extraPages[i], extraPages[i - 1]]; } }
+      else if (r) { const i = Number(r.dataset.extraRight); if (i < extraPages.length - 1) { [extraPages[i + 1], extraPages[i]] = [extraPages[i], extraPages[i + 1]]; } }
+      else if (d) { extraPages.splice(Number(d.dataset.extraDel), 1); }
+      else return;
+      renderExtraPages();
+    });
+    backdrop.querySelector('#extra-pages-input').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []);
+      if (!files.length) return;
+      uploadsInFlight += 1;
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Uploading photo…';
+      try {
+        for (const file of files) {
+          const fd = new FormData();
+          fd.append('image', file);
+          const res = await api('/admin/upload', { method: 'POST', body: fd });
+          extraPages.push(res.url);
+          renderExtraPages();
+        }
+      } catch (err) {
+        alert('Image upload failed: ' + err.message);
+      } finally {
+        e.target.value = '';
+        uploadsInFlight -= 1;
+        if (uploadsInFlight === 0) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = savedSaveLabel;
+        }
+      }
+    });
+
     backdrop.querySelector('[data-cancel]').addEventListener('click', () => backdrop.remove());
     saveBtn.addEventListener('click', async () => {
       if (uploadsInFlight > 0) { alert('Please wait for the photo to finish uploading before saving.'); return; }
@@ -572,6 +631,7 @@
         subtitle,
         image: backdrop.querySelector('[data-field="image"]').value || null,
         detail_image: backdrop.querySelector('[data-field="detail_image"]').value || null,
+        detail_images: extraPages,
         menu_group: backdrop.querySelector('[data-field="menu_group"]').value,
         promo_category: backdrop.querySelector('[data-field="promo_category"]').value,
       };
