@@ -468,9 +468,8 @@
         if (dish) openItemModal(dish, { hidePrice: true });
         return;
       }
-      if (e.target.closest('.set-clear')) { clearSetChoices(); return; }
-      const setCard = e.target.closest('.set-card');
-      if (setCard) { handleSetCard(setCard); return; }
+      // Set Menu cards are display-only: guests cannot select them.
+      if (e.target.closest('.set-card')) return;
       const promoCard = e.target.closest('.promo-banner-card');
       if (promoCard) {
         const promotions = state.menu.promotions || [];
@@ -606,7 +605,6 @@
     const icon = FOOD_ICONS[(item.food_color_code || 0) % FOOD_ICONS.length];
     return `
       <div class="set-card" data-set-group="${group}" data-set-id="${id}">
-        <span class="set-check">✓</span>
         <div class="item-image" style="${item.image ? `background-image:url('${item.image}')` : ''}">${item.image ? '' : icon}</div>
         <div class="item-body">
           ${pill ? `<div class="set-extra-pill">${escapeHtml(pill)}</div>` : ''}
@@ -622,7 +620,6 @@
   function renderSetTextCard(group, id, emoji, name, desc, plus) {
     return `
       <div class="set-card set-card-text" data-set-group="${group}" data-set-id="${id}">
-        <span class="set-check">✓</span>
         <div class="set-card-icon">${emoji}</div>
         <div class="item-body">
           ${plus ? `<div class="set-extra-pill">${escapeHtml(plus)}</div>` : ''}
@@ -698,7 +695,6 @@
           <div class="set-hero-price">${formatNumber(setState.base)} <small>${escapeHtml(sl('perSet'))}</small></div>
         </div>
       </div>
-      <div class="hbfb-pick">${escapeHtml(sl('tapHint'))}</div>
       ${section('sel1', SET_APPS.map((id) => renderSetDishCard('app', id)).join(''))}
       ${section('sel2', SET_MAINS.map((id) => renderSetDishCard('main', id)).join(''), `<div class="hbfb-extra">+ ${escapeHtml(sl('rice'))}</div>`)}
       ${section('sel3', [
@@ -717,7 +713,6 @@
         <div class="item-grid">${SET_DESSERTS.map((id) => renderSetDishCard('dessert', id, `+${SET_DESSERT_PLUS} ${state.menu.currency || 'THB'}  →  ${formatNumber(setState.base + SET_DESSERT_PLUS)} ${sl('perSet')}`)).join('')}</div>
       </section>
       ${renderDietaryLegend()}
-      <div class="set-summary" id="set-summary">${setSummaryInner()}</div>
     `;
   }
 

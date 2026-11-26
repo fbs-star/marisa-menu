@@ -931,3 +931,8 @@ body[data-lang="th"] .hbfb-drink-title, body[data-lang="zh"] .hbfb-drink-title, 
 
 /* Info button removed: show each dish's full description on its card instead */
 .set-card .item-desc { -webkit-line-clamp: unset; display: block; }
+
+/* Set Menu is display-only: cards are not tappable */
+.set-card { cursor: default; }
+.set-card:active { transform: none; }
+.content:has(.set-summary) { padding-bottom: 60px; }
