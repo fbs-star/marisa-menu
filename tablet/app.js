@@ -462,6 +462,15 @@
     });
 
     document.getElementById('content').addEventListener('click', (e) => {
+      const setInfo = e.target.closest('.set-info');
+      if (setInfo) {
+        const dish = hbfbItem(Number(setInfo.dataset.info));
+        if (dish) openItemModal(dish, { hidePrice: true });
+        return;
+      }
+      if (e.target.closest('.set-clear')) { clearSetChoices(); return; }
+      const setCard = e.target.closest('.set-card');
+      if (setCard) { handleSetCard(setCard); return; }
       const promoCard = e.target.closest('.promo-banner-card');
       if (promoCard) {
         const promotions = state.menu.promotions || [];
@@ -509,8 +518,207 @@
     }, 5000);
   }
 
+  // ---------------- Set Menu (Authentic Thai Set Menu) ----------------
+  // Interactive "build your set" page shown in place of the normal item grid
+  // when the Food Menu category named "Set Menu" is opened. Dishes are
+  // references (by item id) to the normal Food Menu items, so photos,
+  // descriptions, dietary icons and translations stay in sync with the admin.
+  // The base price comes from the single item inside the Set Menu category.
+  const SET_APPS = [5, 7, 10, 8, 12];
+  const SET_MAINS = [30, 35, 33, 38, 34];
+  const SET_DESSERTS = [51, 54, 55];
+  const SET_WINE_PLUS = 100;
+  const SET_DESSERT_PLUS = 190;
+  const setState = { app: null, main: null, bev: null, wine: false, dessert: null, base: 990 };
+  const SET_COCKTAILS = 'Mai Tai, Piña Colada, Caipiroska, Daiquiri, Sex on the Beach, Mojito, Blue Moon, Singapore Sling, Caipirinha, Cosmopolitan';
+  const SET_I18N = {
+    en: {
+      sel1: 'Selection 1 · Appetizer', sel2: 'Selection 2 · Main Course', sel3: 'Selection 3 · Beverage', chooseOne: 'Choose 1',
+      rice: 'All main courses are served with complimentary steamed Jasmine Rice.',
+      tagline: 'A curated selection of our signature dishes, crafted for an unforgettable dining experience.', perSet: 'THB / SET',
+      cocktail: 'Classic Cocktail (1 Glass)', mocktail: 'Mocktail (1 Glass)', mocktailDesc: 'Refreshing non-alcoholic house selections',
+      beer: 'Local Beer (2 Bottles)', beerDesc: 'Choice of chilled local beers',
+      addons: 'Elevate Your Experience — Optional Add-ons', wine: 'Wine Upgrade', wineDesc: 'Upgrade your beverage to a glass of Little Things Wine (Cabernet Sauvignon or Chardonnay, Australia).',
+      dessertTitle: 'Thai Dessert', dessertDesc: 'Complete your meal with one traditional Thai dessert (choose 1):',
+      yourSet: 'Your set', notChosen: 'Not chosen yet', total: 'Total', clear: 'Clear',
+      typeApp: 'Appetizer', typeMain: 'Main course', typeBev: 'Beverage', typeDessert: 'Dessert', tapHint: 'Tap a dish to select it, tap again to unselect',
+    },
+    th: {
+      sel1: 'ส่วนที่ 1 · อาหารเรียกน้ำย่อย', sel2: 'ส่วนที่ 2 · จานหลัก', sel3: 'ส่วนที่ 3 · เครื่องดื่ม', chooseOne: 'เลือก 1',
+      rice: 'จานหลักทุกจานเสิร์ฟพร้อมข้าวสวยหอมมะลิฟรี',
+      tagline: 'อาหารจานเด็ดคัดสรร ปรุงอย่างพิถีพิถันเพื่อประสบการณ์การรับประทานที่น่าจดจำ', perSet: 'บาท / เซ็ต',
+      cocktail: 'ค็อกเทลคลาสสิก (1 แก้ว)', mocktail: 'ม็อกเทล (1 แก้ว)', mocktailDesc: 'เครื่องดื่มไม่มีแอลกอฮอล์สูตรเฉพาะของร้าน',
+      beer: 'เบียร์ท้องถิ่น (2 ขวด)', beerDesc: 'เลือกเบียร์ท้องถิ่นแช่เย็น',
+      addons: 'เพิ่มความพิเศษ — ตัวเลือกเสริม', wine: 'อัปเกรดไวน์', wineDesc: 'เปลี่ยนเครื่องดื่มเป็นไวน์ Little Things 1 แก้ว (Cabernet Sauvignon หรือ Chardonnay จากออสเตรเลีย)',
+      dessertTitle: 'ของหวานไทย', dessertDesc: 'เติมเต็มมื้ออาหารด้วยของหวานไทย (เลือก 1):',
+      yourSet: 'เซ็ตของคุณ', notChosen: 'ยังไม่ได้เลือก', total: 'รวม', clear: 'ล้างที่เลือก',
+      typeApp: 'อาหารเรียกน้ำย่อย', typeMain: 'จานหลัก', typeBev: 'เครื่องดื่ม', typeDessert: 'ของหวาน', tapHint: 'แตะที่เมนูเพื่อเลือก แตะซ้ำเพื่อยกเลิก',
+    },
+    ru: {
+      sel1: 'Выбор 1 · Закуска', sel2: 'Выбор 2 · Основное блюдо', sel3: 'Выбор 3 · Напиток', chooseOne: 'Выберите 1',
+      rice: 'Все основные блюда подаются с бесплатным паровым жасминовым рисом.',
+      tagline: 'Тщательно подобранные фирменные блюда для незабываемого ужина.', perSet: 'THB / сет',
+      cocktail: 'Классический коктейль (1 бокал)', mocktail: 'Моктейль (1 бокал)', mocktailDesc: 'Освежающие безалкогольные напитки от заведения',
+      beer: 'Местное пиво (2 бутылки)', beerDesc: 'На выбор охлаждённое местное пиво',
+      addons: 'Сделайте ужин особенным — дополнительно', wine: 'Апгрейд вина', wineDesc: 'Замените напиток бокалом вина Little Things (Каберне Совиньон или Шардоне, Австралия).',
+      dessertTitle: 'Тайский десерт', dessertDesc: 'Завершите ужин традиционным тайским десертом (выберите 1):',
+      yourSet: 'Ваш сет', notChosen: 'Не выбрано', total: 'Итого', clear: 'Сбросить',
+      typeApp: 'Закуска', typeMain: 'Основное блюдо', typeBev: 'Напиток', typeDessert: 'Десерт', tapHint: 'Нажмите на блюдо, чтобы выбрать; нажмите снова, чтобы отменить',
+    },
+    zh: {
+      sel1: '选择1 · 开胃菜', sel2: '选择2 · 主菜', sel3: '选择3 · 饮品', chooseOne: '任选1款',
+      rice: '所有主菜均配赠清蒸茉莉香米饭。',
+      tagline: '精选招牌菜，打造难忘的用餐体验。', perSet: '泰铢 / 套',
+      cocktail: '经典鸡尾酒（1杯）', mocktail: '无酒精鸡尾酒（1杯）', mocktailDesc: '店内特调清爽无酒精饮品',
+      beer: '本地啤酒（2瓶）', beerDesc: '可选冰镇本地啤酒',
+      addons: '升级体验 — 可选加购', wine: '升级葡萄酒', wineDesc: '将饮品升级为一杯Little Things葡萄酒（澳大利亚赤霞珠或霞多丽）。',
+      dessertTitle: '泰式甜点', dessertDesc: '任选一款传统泰式甜点，为用餐画上句号：',
+      yourSet: '您的套餐', notChosen: '尚未选择', total: '合计', clear: '清除',
+      typeApp: '开胃菜', typeMain: '主菜', typeBev: '饮品', typeDessert: '甜点', tapHint: '点击菜品即可选择，再点一次取消',
+    },
+    ar: {
+      sel1: 'الاختيار 1 · المقبلات', sel2: 'الاختيار 2 · الطبق الرئيسي', sel3: 'الاختيار 3 · المشروب', chooseOne: 'اختر واحداً',
+      rice: 'تُقدَّم جميع الأطباق الرئيسية مع أرز الياسمين المطهو على البخار مجاناً.',
+      tagline: 'تشكيلة مختارة من أطباقنا المميزة، أُعدّت لتجربة طعام لا تُنسى.', perSet: 'بات / باقة',
+      cocktail: 'كوكتيل كلاسيكي (كأس واحد)', mocktail: 'موكتيل (كأس واحد)', mocktailDesc: 'مشروبات المنزل المنعشة الخالية من الكحول',
+      beer: 'بيرة محلية (زجاجتان)', beerDesc: 'اختيار من البيرة المحلية المثلجة',
+      addons: 'ارتقِ بتجربتك — إضافات اختيارية', wine: 'ترقية النبيذ', wineDesc: 'استبدل مشروبك بكأس من نبيذ Little Things (كابرنيه سوفينيون أو شاردونيه، أستراليا).',
+      dessertTitle: 'حلوى تايلاندية', dessertDesc: 'أكمل وجبتك بحلوى تايلاندية تقليدية (اختر واحدة):',
+      yourSet: 'باقتك', notChosen: 'لم يتم الاختيار', total: 'المجموع', clear: 'مسح',
+      typeApp: 'المقبلات', typeMain: 'الطبق الرئيسي', typeBev: 'المشروب', typeDessert: 'الحلوى', tapHint: 'المس الطبق لاختياره، والمسه مرة أخرى لإلغاء الاختيار',
+    },
+  };
+  function sl(key) {
+    return (SET_I18N[state.lang] && SET_I18N[state.lang][key]) || SET_I18N.en[key] || key;
+  }
+  function isSetMenuCategory(c) {
+    return !!(c && c.name && c.name.en === 'Set Menu');
+  }
+
+  function renderSetDishCard(group, id) {
+    const item = hbfbItem(id);
+    if (!item) return '';
+    const icon = FOOD_ICONS[(item.food_color_code || 0) % FOOD_ICONS.length];
+    return `
+      <div class="set-card" data-set-group="${group}" data-set-id="${id}">
+        <span class="set-check">✓</span>
+        <button type="button" class="set-info" data-info="${id}" aria-label="Info">i</button>
+        <div class="item-image" style="${item.image ? `background-image:url('${item.image}')` : ''}">${item.image ? '' : icon}</div>
+        <div class="item-body">
+          <div class="item-name-row">
+            <div class="item-name">${escapeHtml(fmt(item.name))}</div>
+            ${renderDietaryIcons(item.dietary)}
+          </div>
+          ${fmt(item.description) ? `<div class="item-desc">${escapeHtml(fmt(item.description))}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function renderSetTextCard(group, id, emoji, name, desc, plus) {
+    return `
+      <div class="set-card set-card-text" data-set-group="${group}" data-set-id="${id}">
+        <span class="set-check">✓</span>
+        <div class="set-card-icon">${emoji}</div>
+        <div class="item-body">
+          <div class="item-name">${escapeHtml(name)}</div>
+          <div class="item-desc">${escapeHtml(desc)}</div>
+          ${plus ? `<div class="set-plus">${escapeHtml(plus)}</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function setSummaryInner() {
+    const nm = (id) => { const it = hbfbItem(id); return it ? fmt(it.name) : ''; };
+    const bev = setState.wine ? `${sl('wine')} · Little Things` : (setState.bev ? sl(setState.bev) : '');
+    const rows = [
+      [sl('typeApp'), setState.app ? nm(setState.app) : ''],
+      [sl('typeMain'), setState.main ? nm(setState.main) : ''],
+      [sl('typeBev'), bev],
+    ];
+    if (setState.dessert) rows.push([sl('typeDessert'), nm(setState.dessert)]);
+    const total = setState.base + (setState.wine ? SET_WINE_PLUS : 0) + (setState.dessert ? SET_DESSERT_PLUS : 0);
+    const complete = setState.app && setState.main && (setState.bev || setState.wine);
+    return `
+      <div class="set-summary-rows">
+        ${rows.map(([label, val]) => `
+          <div class="set-summary-row ${val ? '' : 'empty'}"><b>${escapeHtml(label)}</b><span>${escapeHtml(val || sl('notChosen'))}</span></div>`).join('')}
+      </div>
+      <div class="set-summary-total ${complete ? 'complete' : ''}">
+        <div class="set-summary-label">${escapeHtml(sl('yourSet'))} · ${escapeHtml(sl('total'))}</div>
+        <div class="amt">${formatNumber(total)} <small>${escapeHtml(sl('perSet'))}</small></div>
+        <button type="button" class="set-clear">${escapeHtml(sl('clear'))}</button>
+      </div>`;
+  }
+
+  function refreshSetUI() {
+    document.querySelectorAll('.set-card').forEach((c) => {
+      const g = c.dataset.setGroup;
+      const sel = g === 'wine' ? setState.wine : String(setState[g]) === c.dataset.setId;
+      c.classList.toggle('selected', !!sel);
+    });
+    const s = document.getElementById('set-summary');
+    if (s) s.innerHTML = setSummaryInner();
+  }
+
+  function handleSetCard(card) {
+    const g = card.dataset.setGroup;
+    const id = card.dataset.setId;
+    if (g === 'wine') setState.wine = !setState.wine;
+    else if (String(setState[g]) === id) setState[g] = null;
+    else setState[g] = (g === 'bev') ? id : Number(id);
+    refreshSetUI();
+  }
+
+  function clearSetChoices() {
+    setState.app = setState.main = setState.bev = setState.dessert = null;
+    setState.wine = false;
+    refreshSetUI();
+  }
+
+  function renderSetMenu(category) {
+    const hero = category.items[0];
+    if (hero && hero.price) setState.base = Number(hero.price);
+    const section = (titleKey, inner, extra) => `
+      <section class="hbfb-section set-section">
+        <h2>${escapeHtml(sl(titleKey))}<span class="set-choose">${escapeHtml(sl('chooseOne'))}</span></h2>
+        <div class="item-grid">${inner}</div>
+        ${extra || ''}
+      </section>`;
+    return `
+      <div class="set-hero">
+        <div class="set-hero-img" style="${hero && hero.image ? `background-image:url('${hero.image}')` : ''}"></div>
+        <div class="set-hero-body">
+          <div class="set-hero-name">${escapeHtml(hero ? fmt(hero.name) : fmt(category.name))}</div>
+          <div class="set-hero-tag">${escapeHtml(sl('tagline'))}</div>
+          <div class="set-hero-price">${formatNumber(setState.base)} <small>${escapeHtml(sl('perSet'))}</small></div>
+        </div>
+      </div>
+      <div class="hbfb-pick">${escapeHtml(sl('tapHint'))}</div>
+      ${section('sel1', SET_APPS.map((id) => renderSetDishCard('app', id)).join(''))}
+      ${section('sel2', SET_MAINS.map((id) => renderSetDishCard('main', id)).join(''), `<div class="hbfb-extra">+ ${escapeHtml(sl('rice'))}</div>`)}
+      ${section('sel3', [
+        renderSetTextCard('bev', 'cocktail', '🍹', sl('cocktail'), SET_COCKTAILS),
+        renderSetTextCard('bev', 'mocktail', '🥤', sl('mocktail'), sl('mocktailDesc')),
+        renderSetTextCard('bev', 'beer', '🍺', sl('beer'), sl('beerDesc')),
+      ].join(''))}
+      <section class="hbfb-section set-section">
+        <h2>${escapeHtml(sl('addons'))}</h2>
+        <div class="item-grid">
+          ${renderSetTextCard('wine', 'wine', '🍷', `${sl('wine')} (+${SET_WINE_PLUS})`, sl('wineDesc'), `+${SET_WINE_PLUS} ${state.menu.currency || 'THB'} → ${formatNumber(setState.base + SET_WINE_PLUS)} ${sl('perSet')}`)}
+        </div>
+        <h3 class="set-subhead">${escapeHtml(sl('dessertTitle'))} (+${SET_DESSERT_PLUS}) <span class="set-choose">${escapeHtml(sl('chooseOne'))}</span></h3>
+        <div class="hbfb-extra" style="margin: 0 0 6px">${escapeHtml(sl('dessertDesc'))}</div>
+        <div class="set-plus" style="margin: 0 0 12px">+${SET_DESSERT_PLUS} ${escapeHtml(state.menu.currency || 'THB')} → ${formatNumber(setState.base + SET_DESSERT_PLUS)} ${escapeHtml(sl('perSet'))}</div>
+        <div class="item-grid">${SET_DESSERTS.map((id) => renderSetDishCard('dessert', id)).join('')}</div>
+      </section>
+      ${renderDietaryLegend()}
+      <div class="set-summary" id="set-summary">${setSummaryInner()}</div>
+    `;
+  }
+
   function renderCategoryContent(category) {
     if (!category) return `<div class="empty-state">${escapeHtml(t('empty'))}</div>`;
+    if (isSetMenuCategory(category)) return renderSetMenu(category);
     // Show the icon guide on every Food Menu page, not just pages where at
     // least one item happens to carry a flag — otherwise pages like Kids Menu -
     // Soup / Dessert (no flagged items) looked inconsistent next to their
