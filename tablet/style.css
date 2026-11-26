@@ -909,3 +909,22 @@ body[data-lang="th"] .hbfb-drink-title, body[data-lang="zh"] .hbfb-drink-title, 
   .set-summary-rows { grid-template-columns: repeat(2, 1fr); }
   .set-section .item-grid { grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); }
 }
+
+/* Optional add-ons: visibly separate and marked as extra-cost */
+.set-addons {
+  margin-top: 36px; padding: 18px 18px 22px; border: 2px dashed #e0a030; border-radius: var(--radius-lg);
+  background: rgba(224, 160, 48, 0.07);
+}
+.set-addons > h2 { border-bottom-color: rgba(224, 160, 48, 0.4); }
+.set-extra-badge {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; margin-inline-start: 12px;
+  padding: 4px 12px; border-radius: 999px; background: #e0a030; color: #2a1a00; vertical-align: middle;
+}
+.set-addons-note { font-size: 14px; font-weight: 600; color: #e0a030; margin: -4px 0 14px; }
+.set-extra-pill {
+  align-self: flex-start; background: #e0a030; color: #2a1a00; font-weight: 800; font-size: 13px;
+  padding: 3px 11px; border-radius: 999px; margin-bottom: 2px;
+}
+.set-addons .set-card { border-color: rgba(224, 160, 48, 0.45); }
+.set-addons .set-card.selected { border-color: #e0a030; box-shadow: 0 0 0 2px #e0a030, var(--shadow-card); }
+.set-addons .set-check { background: #e0a030; }

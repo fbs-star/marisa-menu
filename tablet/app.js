@@ -542,6 +542,7 @@
       dessertTitle: 'Thai Dessert', dessertDesc: 'Complete your meal with one traditional Thai dessert (choose 1):',
       yourSet: 'Your set', notChosen: 'Not chosen yet', total: 'Total', clear: 'Clear',
       typeApp: 'Appetizer', typeMain: 'Main course', typeBev: 'Beverage', typeDessert: 'Dessert', tapHint: 'Tap a dish to select it, tap again to unselect',
+      extraCharge: 'Extra charge', notIncluded: 'Not included in the set price',
     },
     th: {
       sel1: 'ส่วนที่ 1 · อาหารเรียกน้ำย่อย', sel2: 'ส่วนที่ 2 · จานหลัก', sel3: 'ส่วนที่ 3 · เครื่องดื่ม', chooseOne: 'เลือก 1',
@@ -553,6 +554,7 @@
       dessertTitle: 'ของหวานไทย', dessertDesc: 'เติมเต็มมื้ออาหารด้วยของหวานไทย (เลือก 1):',
       yourSet: 'เซ็ตของคุณ', notChosen: 'ยังไม่ได้เลือก', total: 'รวม', clear: 'ล้างที่เลือก',
       typeApp: 'อาหารเรียกน้ำย่อย', typeMain: 'จานหลัก', typeBev: 'เครื่องดื่ม', typeDessert: 'ของหวาน', tapHint: 'แตะที่เมนูเพื่อเลือก แตะซ้ำเพื่อยกเลิก',
+      extraCharge: 'ต้องจ่ายเพิ่ม', notIncluded: 'ไม่รวมอยู่ในราคาเซ็ต',
     },
     ru: {
       sel1: 'Выбор 1 · Закуска', sel2: 'Выбор 2 · Основное блюдо', sel3: 'Выбор 3 · Напиток', chooseOne: 'Выберите 1',
@@ -564,6 +566,7 @@
       dessertTitle: 'Тайский десерт', dessertDesc: 'Завершите ужин традиционным тайским десертом (выберите 1):',
       yourSet: 'Ваш сет', notChosen: 'Не выбрано', total: 'Итого', clear: 'Сбросить',
       typeApp: 'Закуска', typeMain: 'Основное блюдо', typeBev: 'Напиток', typeDessert: 'Десерт', tapHint: 'Нажмите на блюдо, чтобы выбрать; нажмите снова, чтобы отменить',
+      extraCharge: 'За дополнительную плату', notIncluded: 'Не входит в стоимость сета',
     },
     zh: {
       sel1: '选择1 · 开胃菜', sel2: '选择2 · 主菜', sel3: '选择3 · 饮品', chooseOne: '任选1款',
@@ -575,6 +578,7 @@
       dessertTitle: '泰式甜点', dessertDesc: '任选一款传统泰式甜点，为用餐画上句号：',
       yourSet: '您的套餐', notChosen: '尚未选择', total: '合计', clear: '清除',
       typeApp: '开胃菜', typeMain: '主菜', typeBev: '饮品', typeDessert: '甜点', tapHint: '点击菜品即可选择，再点一次取消',
+      extraCharge: '需另外付费', notIncluded: '不包含在套餐价格内',
     },
     ar: {
       sel1: 'الاختيار 1 · المقبلات', sel2: 'الاختيار 2 · الطبق الرئيسي', sel3: 'الاختيار 3 · المشروب', chooseOne: 'اختر واحداً',
@@ -586,6 +590,7 @@
       dessertTitle: 'حلوى تايلاندية', dessertDesc: 'أكمل وجبتك بحلوى تايلاندية تقليدية (اختر واحدة):',
       yourSet: 'باقتك', notChosen: 'لم يتم الاختيار', total: 'المجموع', clear: 'مسح',
       typeApp: 'المقبلات', typeMain: 'الطبق الرئيسي', typeBev: 'المشروب', typeDessert: 'الحلوى', tapHint: 'المس الطبق لاختياره، والمسه مرة أخرى لإلغاء الاختيار',
+      extraCharge: 'برسوم إضافية', notIncluded: 'غير مشمولة في سعر الباقة',
     },
   };
   function sl(key) {
@@ -595,7 +600,7 @@
     return !!(c && ((c.name && (c.name.en === 'Set Menu' || c.name.en === 'Authentic Thai Set Menu')) || c.id === 45));
   }
 
-  function renderSetDishCard(group, id) {
+  function renderSetDishCard(group, id, pill) {
     const item = hbfbItem(id);
     if (!item) return '';
     const icon = FOOD_ICONS[(item.food_color_code || 0) % FOOD_ICONS.length];
@@ -605,6 +610,7 @@
         <button type="button" class="set-info" data-info="${id}" aria-label="Info">i</button>
         <div class="item-image" style="${item.image ? `background-image:url('${item.image}')` : ''}">${item.image ? '' : icon}</div>
         <div class="item-body">
+          ${pill ? `<div class="set-extra-pill">${escapeHtml(pill)}</div>` : ''}
           <div class="item-name-row">
             <div class="item-name">${escapeHtml(fmt(item.name))}</div>
             ${renderDietaryIcons(item.dietary)}
@@ -620,22 +626,22 @@
         <span class="set-check">✓</span>
         <div class="set-card-icon">${emoji}</div>
         <div class="item-body">
+          ${plus ? `<div class="set-extra-pill">${escapeHtml(plus)}</div>` : ''}
           <div class="item-name">${escapeHtml(name)}</div>
           <div class="item-desc">${escapeHtml(desc)}</div>
-          ${plus ? `<div class="set-plus">${escapeHtml(plus)}</div>` : ''}
         </div>
       </div>`;
   }
 
   function setSummaryInner() {
     const nm = (id) => { const it = hbfbItem(id); return it ? fmt(it.name) : ''; };
-    const bev = setState.wine ? `${sl('wine')} · Little Things` : (setState.bev ? sl(setState.bev) : '');
+    const bev = setState.wine ? `${sl('wine')} (+${SET_WINE_PLUS})` : (setState.bev ? sl(setState.bev) : '');
     const rows = [
       [sl('typeApp'), setState.app ? nm(setState.app) : ''],
       [sl('typeMain'), setState.main ? nm(setState.main) : ''],
       [sl('typeBev'), bev],
     ];
-    if (setState.dessert) rows.push([sl('typeDessert'), nm(setState.dessert)]);
+    if (setState.dessert) rows.push([sl('typeDessert'), `${nm(setState.dessert)} (+${SET_DESSERT_PLUS})`]);
     const total = setState.base + (setState.wine ? SET_WINE_PLUS : 0) + (setState.dessert ? SET_DESSERT_PLUS : 0);
     const complete = setState.app && setState.main && (setState.bev || setState.wine);
     return `
@@ -701,15 +707,15 @@
         renderSetTextCard('bev', 'mocktail', '🥤', sl('mocktail'), sl('mocktailDesc')),
         renderSetTextCard('bev', 'beer', '🍺', sl('beer'), sl('beerDesc')),
       ].join(''))}
-      <section class="hbfb-section set-section">
-        <h2>${escapeHtml(sl('addons'))}</h2>
+      <section class="hbfb-section set-section set-addons">
+        <h2>${escapeHtml(sl('addons'))}<span class="set-extra-badge">${escapeHtml(sl('extraCharge'))}</span></h2>
+        <div class="set-addons-note">${escapeHtml(sl('notIncluded'))}</div>
         <div class="item-grid">
-          ${renderSetTextCard('wine', 'wine', '🍷', `${sl('wine')} (+${SET_WINE_PLUS})`, sl('wineDesc'), `+${SET_WINE_PLUS} ${state.menu.currency || 'THB'} → ${formatNumber(setState.base + SET_WINE_PLUS)} ${sl('perSet')}`)}
+          ${renderSetTextCard('wine', 'wine', '🍷', `${sl('wine')}`, sl('wineDesc'), `+${SET_WINE_PLUS} ${state.menu.currency || 'THB'}  →  ${formatNumber(setState.base + SET_WINE_PLUS)} ${sl('perSet')}`)}
         </div>
-        <h3 class="set-subhead">${escapeHtml(sl('dessertTitle'))} (+${SET_DESSERT_PLUS}) <span class="set-choose">${escapeHtml(sl('chooseOne'))}</span></h3>
-        <div class="hbfb-extra" style="margin: 0 0 6px">${escapeHtml(sl('dessertDesc'))}</div>
-        <div class="set-plus" style="margin: 0 0 12px">+${SET_DESSERT_PLUS} ${escapeHtml(state.menu.currency || 'THB')} → ${formatNumber(setState.base + SET_DESSERT_PLUS)} ${escapeHtml(sl('perSet'))}</div>
-        <div class="item-grid">${SET_DESSERTS.map((id) => renderSetDishCard('dessert', id)).join('')}</div>
+        <h3 class="set-subhead">${escapeHtml(sl('dessertTitle'))}<span class="set-choose">${escapeHtml(sl('chooseOne'))}</span></h3>
+        <div class="hbfb-extra" style="margin: 0 0 12px">${escapeHtml(sl('dessertDesc'))}</div>
+        <div class="item-grid">${SET_DESSERTS.map((id) => renderSetDishCard('dessert', id, `+${SET_DESSERT_PLUS} ${state.menu.currency || 'THB'}  →  ${formatNumber(setState.base + SET_DESSERT_PLUS)} ${sl('perSet')}`)).join('')}</div>
       </section>
       ${renderDietaryLegend()}
       <div class="set-summary" id="set-summary">${setSummaryInner()}</div>
