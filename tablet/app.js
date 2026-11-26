@@ -592,7 +592,7 @@
     return (SET_I18N[state.lang] && SET_I18N[state.lang][key]) || SET_I18N.en[key] || key;
   }
   function isSetMenuCategory(c) {
-    return !!(c && c.name && c.name.en === 'Set Menu');
+    return !!(c && ((c.name && (c.name.en === 'Set Menu' || c.name.en === 'Authentic Thai Set Menu')) || c.id === 45));
   }
 
   function renderSetDishCard(group, id) {
