@@ -354,10 +354,10 @@ body[data-lang="ar"] .category-heading h2 { font-family: inherit; font-weight: 7
 .modal-body .item-name-row { margin-bottom: 8px; }
 .modal-body .item-name { font-size: 22px; margin-bottom: 0; }
 .modal-body .dietary-icon { width: 20px; height: 20px; }
-.modal-body .item-desc { -webkit-line-clamp: unset; font-size: 15px; margin-bottom: 14px; }
+.modal-body .item-desc { -webkit-line-clamp: unset; font-size: 15px; margin-bottom: 14px; white-space: pre-line; }
 .modal-price-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
 .modal-price-row .item-price { font-size: 22px; }
-.price-note { font-size: 13px; color: var(--color-ink-soft); margin-top: 6px; }
+.price-note { font-size: 13px; color: var(--color-ink-soft); margin-top: 6px; white-space: pre-line; }
 .meta-row { display: flex; gap: 16px; margin-top: 14px; font-size: 13px; color: var(--color-ink-soft); flex-wrap: wrap; }
 
 /* Scrollbars: keep subtle for tablet touch use */
