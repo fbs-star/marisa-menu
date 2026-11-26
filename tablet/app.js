@@ -607,7 +607,6 @@
     return `
       <div class="set-card" data-set-group="${group}" data-set-id="${id}">
         <span class="set-check">✓</span>
-        <button type="button" class="set-info" data-info="${id}" aria-label="Info">i</button>
         <div class="item-image" style="${item.image ? `background-image:url('${item.image}')` : ''}">${item.image ? '' : icon}</div>
         <div class="item-body">
           ${pill ? `<div class="set-extra-pill">${escapeHtml(pill)}</div>` : ''}

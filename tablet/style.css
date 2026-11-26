@@ -928,3 +928,6 @@ body[data-lang="th"] .hbfb-drink-title, body[data-lang="zh"] .hbfb-drink-title, 
 .set-addons .set-card { border-color: rgba(224, 160, 48, 0.45); }
 .set-addons .set-card.selected { border-color: #e0a030; box-shadow: 0 0 0 2px #e0a030, var(--shadow-card); }
 .set-addons .set-check { background: #e0a030; }
+
+/* Info button removed: show each dish's full description on its card instead */
+.set-card .item-desc { -webkit-line-clamp: unset; display: block; }
