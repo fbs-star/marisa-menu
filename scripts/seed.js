@@ -3,6 +3,17 @@
 // 185 items, 5 languages) captured from the hotel's existing menu template.
 // This is provisional data pending the hotel's own .xlsx upload for a
 // guaranteed byte-perfect import (see backend/importMenu.js / admin Import tab).
+//
+// DISABLED BY DEFAULT: Render's build command runs `npm run seed` on every
+// deploy. This old starter data re-imported each time, re-creating dishes that
+// had since been renamed or deleted in the admin (duplicates kept reappearing
+// right after each deploy). It now only runs when RUN_SEED=1 is set, e.g. for
+// a brand-new empty database.
+if (process.env.RUN_SEED !== '1') {
+  console.log('[seed] skipped (set RUN_SEED=1 to seed an empty database)');
+  process.exit(0);
+}
+
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
@@ -47,4 +58,3 @@ fs.writeFileSync(path.join(__dirname, 'seed_data', 'marisa_menu_seed.xlsx'), buf
     process.exit(1);
   }
 })();
-
